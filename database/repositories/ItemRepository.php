@@ -6,7 +6,7 @@ use App\Item;
 
 class ItemRepository {
 
-    const TYPE_STANDALONE = 'SA';
+    const TYPE_ALL = '*';
     const TYPE_ALBUM = 'AL';
 
     const REP_MASTER = 'masterRoot';
@@ -17,13 +17,13 @@ class ItemRepository {
     const REP_THUMBNAIL = 'troot';
 
     protected $types = [
-        self::TYPE_STANDALONE   =>  [
+        self::TYPE_ALL   =>  [
             'assetType' =>  'image',
             'itemType'  =>  'image'
         ],
         self::TYPE_ALBUM    =>  [
             'assetType' =>  'image',
-            'itemtype'  =>  'album'
+            'itemType'  =>  'album'
         ]
     ];
 
@@ -36,37 +36,37 @@ class ItemRepository {
         self::REP_THUMBNAIL     =>  '_DAMt',
     ];
 
-    public function getMastersCount($type = self::TYPE_STANDALONE)
+    public function getMastersCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_MASTER);
         return $count;
     }
 
-    public function getComastersCount($type = self::TYPE_STANDALONE)
+    public function getComastersCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_COMASTER);
         return $count;
     }
 
-    public function getHiresCount($type = self::TYPE_STANDALONE)
+    public function getHiresCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_HIRES);
         return $count;
     }
 
-    public function getStdresCount($type = self::TYPE_STANDALONE)
+    public function getStdresCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_STDRES);
         return $count;
     }
 
-    public function getPreviewCount($type = self::TYPE_STANDALONE)
+    public function getPreviewCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_PREVIEW);
         return $count;
     }
 
-    public function getThumbnailCount($type = self::TYPE_STANDALONE)
+    public function getThumbnailCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_THUMBNAIL);
         return $count;
@@ -100,6 +100,10 @@ class ItemRepository {
                 ->count();
         return $count;
     }
+
+
+
+
 
 
 }

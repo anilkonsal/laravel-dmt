@@ -40,6 +40,36 @@ class ItemService {
         return $this->itemRepository->getThumbnailCount();
     }
 
+    public function getAlbumMastersCount()
+    {
+        return $this->itemRepository->getMastersCount(ItemRepository::TYPE_ALBUM);
+    }
+
+    public function getAlbumComastersCount()
+    {
+        return $this->itemRepository->getComastersCount(ItemRepository::TYPE_ALBUM);
+    }
+
+    public function getAlbumHiresCount()
+    {
+        return $this->itemRepository->getHiresCount(ItemRepository::TYPE_ALBUM);
+    }
+
+    public function getAlbumStdresCount()
+    {
+        return $this->itemRepository->getStdresCount(ItemRepository::TYPE_ALBUM);
+    }
+
+    public function getAlbumPreviewCount()
+    {
+        return $this->itemRepository->getPreviewCount(ItemRepository::TYPE_ALBUM);
+    }
+
+    public function getAlbumThumbnailCount()
+    {
+        return $this->itemRepository->getThumbnailCount(ItemRepository::TYPE_ALBUM);
+    }
+
     public function getAlbumsCount()
     {
         return $this->itemRepository->getAlbumsCount();

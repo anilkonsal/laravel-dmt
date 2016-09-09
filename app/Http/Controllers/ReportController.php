@@ -31,7 +31,22 @@ class ReportController extends Controller
     {
         $albumsCount = $itemService->getAlbumsCount();
         $imagesInAlbumsCount = $itemService->getImagesInAlbumsCount();
+
+        $mastersCount = $itemService->getAlbumMastersCount();
+        $comastersCount = $itemService->getAlbumComastersCount();
+        $hiresCount = $itemService->getAlbumHiresCount();
+        $stdresCount = $itemService->getAlbumStdresCount();
+        $previewCount = $itemService->getAlbumPreviewCount();
+        $thumbnailCount = $itemService->getAlbumThumbnailCount();
+
+
         return view('report.album', [
+            'masters_count' => $mastersCount,
+            'comasters_count' => $comastersCount,
+            'hires_count' => $hiresCount,
+            'stdres_count' => $stdresCount,
+            'preview_count' => $previewCount,
+            'thumbnail_count' => $thumbnailCount,
             'albums_count'  =>  $albumsCount,
             'images_in_albums_count' => $imagesInAlbumsCount
         ]);
