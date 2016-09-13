@@ -4,6 +4,47 @@
     <div class="row">
         <div class="col-md-6 col-lg-6">
             <div class="panel panel-default">
+
+                <div class="panel-body">
+                    @if ($errors->count())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
+                    <form method="post" action="{{ route('details_report') }}">
+                        {{ csrf_field() }}
+                        <div class="form-group{{ $errors->has('item_id') ? ' has-error' : '' }}">
+                            <label for="item_id" class="col-md-4 control-label">Item ID</label>
+
+                            <div class="col-md-6">
+                                <input id="item_id" type="text" class="form-control" name="item_id" value="{{ old('item_id') }}" required autofocus>
+
+                                @if ($errors->has('item_id'))
+                                    <span class="help-block">
+                                        <strong>{{ $errors->first('item_id') }}</strong>
+                                    </span>
+                                @endif
+                                <br/>
+                                <button type="submit" class="btn btn-primary">
+                                    Fetch Report
+                                </button>
+
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @if(isset($count))
+    <div class="row">
+        <div class="col-md-6 col-lg-6">
+            <div class="panel panel-default">
                 <div class="panel-heading">
                     Detail Report
                 </div>
@@ -47,7 +88,8 @@
                             <table class="table table-striped">
                                 <tbody>
                                     <tr>
-                                        <td colspan="2"><h3>Album</h3></td>
+                                        <td colspan><h3>Albums</h3></td>
+                                        <td><h3>{{ $count['albumsCount'] }}</h3></td>
                                     </tr>
                                     <tr>
                                         <td>Master Count</td>
@@ -85,5 +127,6 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 @endsection

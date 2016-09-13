@@ -42,3 +42,8 @@ Route::get('/report/details', [
     'middleware' => 'auth',
     'uses'  =>  'ReportController@details'
 ]);
+Route::post('/report/details', [
+    'as'    =>  'details_report',
+    'middleware' => 'auth',
+    'uses'  =>  'ReportController@details'
+]);

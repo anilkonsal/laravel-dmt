@@ -87,15 +87,25 @@ class ReportController extends Controller
 
     public function details(Request $request, ItemService $itemService)
     {
-        $itemID = $request->get('item_id');
+        if ($request->isMethod('post')) {
 
-        if (empty($itemID)) {
-            throw new \InvalidArgumentException( 'Please provide the item ID', '400');
+            $this->validate($request, [
+                'item_id' => 'required|integer',
+            ]);
+
+            $itemID = $request->input('item_id');
+
+
+            if (empty($itemID)) {
+                throw new \InvalidArgumentException( 'Please provide the item ID', '400');
+            }
+
+            $count = $itemService->getDetails($itemID);
+            return view('report.details', ['item_id' => $itemID, 'count' => $count]);
         }
+        return view('report.details');
 
-        $count = $itemService->getDetails($itemID);
-        
-        return view('report.details', ['item_id' => $itemID, 'count' => $count]);
 
     }
+
 }

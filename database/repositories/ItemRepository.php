@@ -118,6 +118,7 @@ class ItemRepository {
             'previewCount'      =>  0,
             'thumbnailCount'    =>  0,
 
+            'albumsCount'       =>  0,
             'albumMasterCount'   =>  0,
             'albumComasterCount' =>  0,
             'albumHiresCount'    =>  0,
@@ -125,7 +126,7 @@ class ItemRepository {
             'albumPreviewCount'  =>  0,
             'albumThumbnailCount'=>  0,
         ];
-
+        $albumsCount = 0;
         // Fetch the item row
         $itemRow = \DB::table('item')
                     ->where('itemID',$itemID)
@@ -161,7 +162,7 @@ class ItemRepository {
             } else {
                 $albumID = $albumRow->itemID;
 
-
+                $albumsCount++;
                 $albumMasterCount = $this->_getRepCountByCollectionID($albumID, self::REP_MASTER);
                 $albumComasterCount = $this->_getRepCountByCollectionID($albumID, self::REP_COMASTER);
                 $albumPreviewCount = $this->_getRepCountByCollectionID($albumID, self::REP_PREVIEW);
@@ -179,6 +180,7 @@ class ItemRepository {
                 'previewCount'      =>  isset($previewCount) ? $previewCount : 0,
                 'thumbnailCount'    =>  isset($thumbnailCount) ? $thumbnailCount : 0,
 
+                'albumsCount'        =>  isset($albumsCount) ? $albumsCount : 0,
                 'albumMasterCount'   =>  isset($albumMasterCount) ? $albumMasterCount : 0,
                 'albumComasterCount' =>  isset($albumComasterCount) ? $albumComasterCount : 0,
                 'albumHiresCount'    =>  isset($albumHiresCount) ? $albumHiresCount : 0,
@@ -200,11 +202,11 @@ class ItemRepository {
             foreach ($children as $child) {
 
                 $itemID = $child->itemID;
-                echo $itemID.'<br/>';
+                //echo $itemID.'<br/>';
                 $nCounts = $this->getDetails($itemID);
-                echo "<pre>";
-                print_r($nCounts);
-                echo "</pre>";
+                // echo "<pre>";
+                // print_r($nCounts);
+                // echo "</pre>";
                 $counts = $this->_array_sum_by_key($counts, $nCounts);
 
             }
