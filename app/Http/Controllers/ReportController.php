@@ -51,4 +51,51 @@ class ReportController extends Controller
             'images_in_albums_count' => $imagesInAlbumsCount
         ]);
     }
+
+    public function standalone(ItemService $itemService)
+    {
+
+        $mastersCount = $itemService->getMastersCount();
+        $comastersCount = $itemService->getComastersCount();
+        $hiresCount = $itemService->getHiresCount();
+        $stdresCount = $itemService->getStdresCount();
+        $previewCount = $itemService->getPreviewCount();
+        $thumbnailCount = $itemService->getThumbnailCount();
+
+        $albumMastersCount = $itemService->getAlbumMastersCount();
+        $albumComastersCount = $itemService->getAlbumComastersCount();
+        $albumHiresCount = $itemService->getAlbumHiresCount();
+        $albumStdresCount = $itemService->getAlbumStdresCount();
+        $albumPreviewCount = $itemService->getAlbumPreviewCount();
+        $albumThumbnailCount = $itemService->getAlbumThumbnailCount();
+
+        $totalImagesCount = $mastersCount + $comastersCount + $hiresCount + $stdresCount + $previewCount + $thumbnailCount;
+        $totalAlbumImagesCount = $albumMastersCount + $albumComastersCount + $albumHiresCount + $albumStdresCount + $albumPreviewCount + $albumThumbnailCount;
+
+        $standaloneImagesCount = $totalImagesCount - $totalAlbumImagesCount;
+
+        return view('report.standalone', [
+            'masters_count' => $mastersCount - $albumMastersCount,
+            'comasters_count' => $comastersCount - $albumComastersCount,
+            'hires_count' => $hiresCount - $albumHiresCount,
+            'stdres_count' => $stdresCount - $albumStdresCount,
+            'preview_count' => $previewCount - $albumPreviewCount,
+            'thumbnail_count' => $thumbnailCount - $albumThumbnailCount,
+            'standalone_images_count'    =>  $standaloneImagesCount
+        ]);
+    }
+
+    public function details(Request $request, ItemService $itemService)
+    {
+        $itemID = $request->get('item_id');
+
+        if (empty($itemID)) {
+            throw new \InvalidArgumentException( 'Please provide the item ID', '400');
+        }
+
+        $count = $itemService->getDetails($itemID);
+        
+        return view('report.details', ['item_id' => $itemID, 'count' => $count]);
+
+    }
 }

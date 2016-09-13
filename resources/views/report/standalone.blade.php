@@ -5,20 +5,11 @@
         <div class="col-md-6 col-lg-4">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    Albums Report
+                    Stand alone Images Report
                 </div>
                 <div class="panel-body">
                     <table class="table table-striped">
                         <tbody>
-                            <tr>
-                                <td>Albums Count</td>
-                                <td>{{ $albums_count }}</td>
-                            </tr>
-                            <tr>
-                                <td>Images in Albums Count</td>
-                                <td>{{ $images_in_albums_count }}</td>
-                            </tr>
-
                             <tr>
                                 <td>Master</td>
                                 <td>{{ $masters_count }}</td>
@@ -44,8 +35,8 @@
                                 <td>{{ $thumbnail_count }}</td>
                             </tr>
                             <tr>
-                                <td>Total number of images (Including all Reps)</td>
-                                <td>{{ $masters_count + $comasters_count + $hires_count + $stdres_count + $preview_count + $thumbnail_count }}</td>
+                                <td>Total images (including all Reps)</td>
+                                <td>{{ $standalone_images_count }}</td>
                             </tr>
                         </tbody>
                     </table>

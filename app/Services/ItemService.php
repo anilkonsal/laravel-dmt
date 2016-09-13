@@ -80,4 +80,9 @@ class ItemService {
         return $this->itemRepository->getImagesInAlbumsCount();
     }
 
+    public function getDetails($itemID)
+    {
+        return $this->itemRepository->getDetails($itemID);
+    }
+
 }

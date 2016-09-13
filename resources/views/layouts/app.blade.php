@@ -42,8 +42,14 @@
             <div class="collapse navbar-collapse" id="app-navbar-collapse">
                 <!-- Left Side Of Navbar -->
                 <ul class="nav navbar-nav">
-                    <li><a href="{{ route('total_report') }}">Total Report</a></li>
-                    <li><a href="{{ route('album_report') }}">Albums Report</a></li>
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports <span class="caret"></span></a>
+                      <ul class="dropdown-menu">
+                        <li><a href="{{ route('total_report') }}">Total Images Report</a></li>
+                        <li><a href="{{ route('album_report') }}">Album Images Report</a></li>
+                        <li><a href="{{ route('standalone_report') }}">Stand Alone Images Report</a></li>
+                      </ul>
+                    </li>
                 </ul>
 
                 <!-- Right Side Of Navbar -->

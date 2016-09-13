@@ -21,10 +21,24 @@ Route::get('/home', 'HomeController@index');
 
 Route::get('/report/total', [
     'as'    =>  'total_report',
+    'middleware' => 'auth',
     'uses'  =>  'ReportController@total'
 ]);
 
 Route::get('/report/album', [
     'as'    =>  'album_report',
+    'middleware' => 'auth',
     'uses'  =>  'ReportController@album'
+]);
+
+Route::get('/report/standalone', [
+    'as'    =>  'standalone_report',
+    'middleware' => 'auth',
+    'uses'  =>  'ReportController@standalone'
+]);
+
+Route::get('/report/details', [
+    'as'    =>  'details_report',
+    'middleware' => 'auth',
+    'uses'  =>  'ReportController@details'
 ]);
