@@ -190,9 +190,20 @@ class ItemRepository {
             ];
 
 
-        } else {
+        // } else {
 
+        }
 
+            // echo $itemID.'<br/>';
+            // echo "<pre>";
+            // print_r($counts);
+            // echo "</pre>";
+
+            echo "<table class='table-bordered table-condensed' width='50%'>
+            <tr>
+            <td>$itemID</td><td>". $counts['albumsCount']."</td><td>".$counts['albumPreviewCount']."</td><td>".$counts['masterCount']."</td>
+            </tr>
+            </table>";
 
             $children = \DB::table('collection')
                             ->where('collectionID', $itemID)
@@ -202,14 +213,15 @@ class ItemRepository {
             foreach ($children as $child) {
 
                 $itemID = $child->itemID;
-                //echo $itemID.'<br/>';
+
                 $nCounts = $this->getDetails($itemID);
+                // echo $itemID.'<br/>';
                 // echo "<pre>";
                 // print_r($nCounts);
                 // echo "</pre>";
                 $counts = $this->_array_sum_by_key($counts, $nCounts);
 
-            }
+
         }
 
         return $counts;

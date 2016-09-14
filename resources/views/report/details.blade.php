@@ -41,12 +41,13 @@
             </div>
         </div>
     </div>
+    
     @if(isset($count))
     <div class="row">
         <div class="col-md-6 col-lg-6">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    Detail Report
+                    <h3>Detail Report for images of Item ID: {{ $item_id }}</h3>
                 </div>
                 <div class="panel-body">
                     <div class="row">
@@ -79,6 +80,10 @@
                                     <tr>
                                         <td>Thumbnail Count</td>
                                         <td>{{ $count['thumbnailCount'] }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Images (Including all representations)</td>
+                                        <td>{{ $count['thumbnailCount'] + $count['previewCount'] +$count['stdresCount'] + $count['hiresCount'] + $count['comasterCount'] + $count['masterCount'] }}</td>
                                     </tr>
 
                                 </tbody>
@@ -115,7 +120,10 @@
                                         <td>Thumbnail Count</td>
                                         <td>{{ $count['albumThumbnailCount'] }}</td>
                                     </tr>
-
+                                    <tr>
+                                        <td>Total Images (Including all representations)</td>
+                                        <td>{{ $count['albumMasterCount'] + $count['albumComasterCount'] +$count['albumHiresCount'] + $count['albumStdresCount'] + $count['albumPreviewCount'] + $count['albumThumbnailCount'] }}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
