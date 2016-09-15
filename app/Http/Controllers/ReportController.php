@@ -94,14 +94,18 @@ class ReportController extends Controller
             ]);
 
             $itemID = $request->input('item_id');
+            $debug = $request->input('debug');
 
 
             if (empty($itemID)) {
                 throw new \InvalidArgumentException( 'Please provide the item ID', '400');
             }
 
-            $count = $itemService->getDetails($itemID);
-            return view('report.details', ['item_id' => $itemID, 'count' => $count]);
+            $allCounts = $itemService->getDetails($itemID, $debug);
+            $counts = $allCounts['counts'];
+            $itemizedCounts = $allCounts['itemizedCounts'];
+
+            return view('report.details', ['item_id' => $itemID, 'count' => $counts, 'itemizedCounts' => $itemizedCounts, 'debug' => $debug]);
         }
         return view('report.details');
 

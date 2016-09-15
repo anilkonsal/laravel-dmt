@@ -50,6 +50,9 @@
                         <li><a href="{{ route('standalone_report') }}">Stand Alone Images Report</a></li>
                       </ul>
                     </li>
+                    <li>
+                        <a href="{{ route('details_report') }}">Search</a>
+                    </li>
                 </ul>
 
                 <!-- Right Side Of Navbar -->

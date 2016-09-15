@@ -108,7 +108,7 @@ class ItemRepository {
     }
 
 
-    public function getDetails($itemID)
+    public function getDetails($itemID, $debug = false, &$itemizedCounts=[])
     {
         $counts = [
             'masterCount'       =>  0,
@@ -189,21 +189,15 @@ class ItemRepository {
                 'albumThumbnailCount'=>  isset($albumThumbnailCount) ? $albumThumbnailCount : 0,
             ];
 
-
-        // } else {
-
         }
 
-            // echo $itemID.'<br/>';
-            // echo "<pre>";
-            // print_r($counts);
-            // echo "</pre>";
 
-            echo "<table class='table-bordered table-condensed' width='50%'>
-            <tr>
-            <td>$itemID</td><td>". $counts['albumsCount']."</td><td>".$counts['albumPreviewCount']."</td><td>".$counts['masterCount']."</td>
-            </tr>
-            </table>";
+            $itemizedCounts[$itemID] = [
+                'albumsCount' => $counts['albumsCount'],
+                'albumImagesCount' => $counts['albumPreviewCount'],
+                'standaloneImagesCount'   => $counts['masterCount']
+            ];
+
 
             $children = \DB::table('collection')
                             ->where('collectionID', $itemID)
@@ -214,17 +208,18 @@ class ItemRepository {
 
                 $itemID = $child->itemID;
 
-                $nCounts = $this->getDetails($itemID);
+                $nCounts = $this->getDetails($itemID, $debug, $itemizedCounts);
+                $mCounts = $nCounts['counts'];
                 // echo $itemID.'<br/>';
                 // echo "<pre>";
                 // print_r($nCounts);
                 // echo "</pre>";
-                $counts = $this->_array_sum_by_key($counts, $nCounts);
+                $counts = $this->_array_sum_by_key($counts, $mCounts);
 
 
         }
 
-        return $counts;
+        return ['counts' => $counts, 'itemizedCounts' => $itemizedCounts];
 
     }
 
