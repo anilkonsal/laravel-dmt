@@ -85,4 +85,9 @@ class ItemService {
         return $this->itemRepository->getDetails($itemID, $debug);
     }
 
+    public function getAlbumImagesNotMigratedCounts()
+    {
+        return $this->itemRepository->getAlbumImagesNotMigratedCounts();
+    }
+
 }

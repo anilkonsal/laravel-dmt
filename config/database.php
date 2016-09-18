@@ -64,6 +64,9 @@ return [
             'prefix' => '',
             'strict' => true,
             'engine' => null,
+            'options'   => array(
+                PDO::ATTR_EMULATE_PREPARES => true
+            ),
         ],
 
         'pgsql' => [

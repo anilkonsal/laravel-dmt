@@ -48,6 +48,7 @@
                         <li><a href="{{ route('total_report') }}">Total Images Report</a></li>
                         <li><a href="{{ route('album_report') }}">Album Images Report</a></li>
                         <li><a href="{{ route('standalone_report') }}">Stand Alone Images Report</a></li>
+                        <li><a href="{{ route('album_images_not_migrated_report') }}">Album Images not Migrated</a></li>
                       </ul>
                     </li>
                     <li>

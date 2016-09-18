@@ -36,6 +36,24 @@ class ItemRepository {
         self::REP_THUMBNAIL     =>  '_DAMt',
     ];
 
+    protected $suffixes = [
+        self::REP_MASTER        =>  'u || _m',
+        self::REP_COMASTER      =>  ' || _c',
+        self::REP_HIRES         =>  'h',
+        self::REP_STDRES        =>  'r',
+        self::REP_PREVIEW       =>  'p',
+        self::REP_THUMBNAIL     =>  't',
+    ];
+
+    protected $extensions = [
+        self::REP_MASTER        =>  'tif',
+        self::REP_COMASTER      =>  'tif',
+        self::REP_HIRES         =>  'jpg',
+        self::REP_STDRES        =>  'jpg',
+        self::REP_PREVIEW       =>  'jpg',
+        self::REP_THUMBNAIL     =>  'jpg',
+    ];
+
     public function getMastersCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_MASTER);
@@ -73,18 +91,31 @@ class ItemRepository {
     }
 
     protected function _getCount($type, $representation) {
-        $sql = \DB::table('item')
-                ->where('assetType', $this->types[$type]['assetType'])
-                ->where('itemType', $this->types[$type]['itemType'])
-                ->where($representation, 'like', $this->representations[$representation].'%')
-                ->where('status','<>','rejected');
 
         if ($type == self::TYPE_ALBUM) {
-            $sql->join('collection','item.itemID', '=', 'collection.collectionID');
+            $count = \DB::table('item')
+                        ->whereIn('itemID', function($query) {
+                            $query->select('collection.itemID')
+                                ->from('item')
+                                ->join('collection','item.itemID', '=', 'collection.collectionID')
+                                ->where('assetType', 'image')
+                                ->where('itemType', 'Album');
+                            })
+                        ->where('assetType', 'image')
+                        ->where('itemType', 'Image')
+                        ->where($representation, 'like', $this->representations[$representation].'%')
+                        ->where('status', '<>', 'rejected')
+                        ->count();
+            return $count;
+        } else {
+            $sql = \DB::table('item')
+                    ->where('assetType', $this->types[$type]['assetType'])
+                    ->where('itemType', $this->types[$type]['itemType'])
+                    ->where($representation, 'like', $this->representations[$representation].'%')
+                    ->where('status','<>','rejected');
+            $count = $sql->count();
+            return $count;
         }
-
-        $count = $sql->count();
-        return $count;
     }
 
     public function getAlbumsCount()
@@ -99,11 +130,19 @@ class ItemRepository {
     public function getImagesInAlbumsCount()
     {
         $count = \DB::table('item')
-                ->join('collection','item.itemID', '=', 'collection.collectionID')
-                ->where('item.assetType', 'image')
-                ->where('item.itemType', 'Album')
-                ->where('item.status','<>','rejected')
-                ->count();
+                    ->whereIn('itemID', function($query) {
+                        $query->select('collection.itemID')
+                            ->from('item')
+                            ->join('collection','item.itemID', '=', 'collection.collectionID')
+                            ->where('assetType', 'image')
+                            ->where('itemType', 'Album')
+                            ;
+
+                    })
+                    ->where('assetType', 'image')
+                    ->where('itemType', 'Image')
+                    ->where('status', '<>', 'rejected')
+                    ->count();
         return $count;
     }
 
@@ -210,10 +249,7 @@ class ItemRepository {
 
                 $nCounts = $this->getDetails($itemID, $debug, $itemizedCounts);
                 $mCounts = $nCounts['counts'];
-                // echo $itemID.'<br/>';
-                // echo "<pre>";
-                // print_r($nCounts);
-                // echo "</pre>";
+
                 $counts = $this->_array_sum_by_key($counts, $mCounts);
 
 
@@ -222,6 +258,15 @@ class ItemRepository {
         return ['counts' => $counts, 'itemizedCounts' => $itemizedCounts];
 
     }
+
+
+    public function getAlbumImagesNotMigratedCounts()
+    {
+        $counts = \DB::select('call album_images_not_migrated()');
+        return $counts;
+    }
+
+
 
     protected function _getRepCountByDigitalID($digitalId, $representation)
     {
@@ -242,7 +287,10 @@ class ItemRepository {
                         $query->select('collection.itemID')
                             ->from('item')
                             ->join('collection','item.itemID', '=', 'collection.collectionID')
-                            ->where('collection.collectionID', $collectionID);
+                            ->where('collection.collectionID', $collectionID)
+                            ->where('assetType', 'image')
+                            ->where('itemType', 'Album')
+                            ;
                     })
 
                     ->where('assetType', 'image')

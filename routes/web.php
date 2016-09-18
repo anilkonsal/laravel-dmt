@@ -37,6 +37,11 @@ Route::get('/report/standalone', [
     'uses'  =>  'ReportController@standalone'
 ]);
 
+Route::get('/report/album-images-not-migrated', [
+    'as'    =>  'album_images_not_migrated_report',
+    'middleware' => 'auth',
+    'uses'  =>  'ReportController@getAlbumImagesNotMigratedCounts'
+]);
 Route::get('/report/details', [
     'as'    =>  'details_report',
     'middleware' => 'auth',

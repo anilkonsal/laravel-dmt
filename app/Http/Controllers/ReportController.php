@@ -109,7 +109,12 @@ class ReportController extends Controller
         }
         return view('report.details');
 
+    }
 
+    public function getAlbumImagesNotMigratedCounts(ItemService $itemService)
+    {
+        $counts = $itemService->getAlbumImagesNotMigratedCounts();
+        return view('report.album-images-not-migrated', ['counts' => $counts]);
     }
 
 }
