@@ -114,7 +114,14 @@ class ReportController extends Controller
     public function getAlbumImagesNotMigratedCounts(ItemService $itemService)
     {
         $counts = $itemService->getAlbumImagesNotMigratedCounts();
+        $counts = $counts[0];
         return view('report.album-images-not-migrated', ['counts' => $counts]);
+    }
+    public function getStandaloneImagesNotMigratedCounts(ItemService $itemService)
+    {
+        $counts = $itemService->getStandaloneImagesNotMigratedCounts();
+        $counts = $counts[0];
+        return view('report.standalone-images-not-migrated', ['counts' => $counts]);
     }
 
 }

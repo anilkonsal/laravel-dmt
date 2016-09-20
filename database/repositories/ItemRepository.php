@@ -266,6 +266,12 @@ class ItemRepository {
         return $counts;
     }
 
+    public function getStandaloneImagesNotMigratedCounts()
+    {
+        $counts = \DB::select('call standalone_images_not_migrated()');
+        return $counts;
+    }
+
 
 
     protected function _getRepCountByDigitalID($digitalId, $representation)

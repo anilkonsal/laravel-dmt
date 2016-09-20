@@ -89,5 +89,9 @@ class ItemService {
     {
         return $this->itemRepository->getAlbumImagesNotMigratedCounts();
     }
+    public function getStandaloneImagesNotMigratedCounts()
+    {
+        return $this->itemRepository->getStandaloneImagesNotMigratedCounts();
+    }
 
 }
