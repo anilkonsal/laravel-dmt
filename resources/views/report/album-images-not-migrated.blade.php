@@ -52,6 +52,12 @@
                                 <td>{{ $counts->totalThumbnailCount - $counts->thumbnailCount }}</td>
                                 <td>{{ $counts->thumbnailCount }}</td>
                             </tr>
+                            <tr>
+                                <td>Total Count</td>
+                                <td></td>
+                                <td></td>
+                                <td>{{ $counts->mastersCount + $counts->comastersCount + $counts->hiresCount + $counts->stdresCount + $counts->previewCount + $counts->thumbnailCount}}</td>
+                            </tr>
                         </tbody>
                     </table>
 
