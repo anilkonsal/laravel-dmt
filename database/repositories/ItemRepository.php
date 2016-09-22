@@ -147,7 +147,7 @@ class ItemRepository {
     }
 
 
-    public function getDetails($itemID, $debug = false, &$itemizedCounts=[])
+    public function getDetails_old($itemID, $debug = false, &$itemizedCounts=[])
     {
         $counts = [
             'masterCount'       =>  0,
@@ -191,6 +191,129 @@ class ItemRepository {
 
             // if no row found
             if (!$albumRow) {
+                $masterCount = $this->_getRepCountByDigitalID($digitalId, self::REP_MASTER);
+                $comasterCount = $this->_getRepCountByDigitalID($digitalId, self::REP_COMASTER);
+                $previewCount = $this->_getRepCountByDigitalID($digitalId, self::REP_PREVIEW);
+                $hiresCount = $this->_getRepCountByDigitalID($digitalId, self::REP_HIRES);
+                $stdresCount = $this->_getRepCountByDigitalID($digitalId, self::REP_STDRES);
+                $thumbnailCount = $this->_getRepCountByDigitalID($digitalId, self::REP_THUMBNAIL);
+
+            } else {
+                $albumID = $albumRow->itemID;
+
+                $albumsCount++;
+                $albumMasterCount = $this->_getRepCountByCollectionID($albumID, self::REP_MASTER);
+                $albumComasterCount = $this->_getRepCountByCollectionID($albumID, self::REP_COMASTER);
+                $albumPreviewCount = $this->_getRepCountByCollectionID($albumID, self::REP_PREVIEW);
+                $albumHiresCount = $this->_getRepCountByCollectionID($albumID, self::REP_HIRES);
+                $albumStdresCount = $this->_getRepCountByCollectionID($albumID, self::REP_STDRES);
+                $albumThumbnailCount = $this->_getRepCountByCollectionID($albumID, self::REP_THUMBNAIL);
+
+            }
+
+            $counts = [
+                'masterCount'       =>  isset($masterCount) ? $masterCount : 0,
+                'comasterCount'     =>  isset($comasterCount) ? $comasterCount : 0,
+                'hiresCount'        =>  isset($hiresCount) ? $hiresCount : 0,
+                'stdresCount'       =>  isset($stdresCount) ? $stdresCount : 0,
+                'previewCount'      =>  isset($previewCount) ? $previewCount : 0,
+                'thumbnailCount'    =>  isset($thumbnailCount) ? $thumbnailCount : 0,
+
+                'albumsCount'        =>  isset($albumsCount) ? $albumsCount : 0,
+                'albumMasterCount'   =>  isset($albumMasterCount) ? $albumMasterCount : 0,
+                'albumComasterCount' =>  isset($albumComasterCount) ? $albumComasterCount : 0,
+                'albumHiresCount'    =>  isset($albumHiresCount) ? $albumHiresCount : 0,
+                'albumStdresCount'   =>  isset($albumStdresCount) ? $albumStdresCount : 0,
+                'albumPreviewCount'  =>  isset($albumPreviewCount) ? $albumPreviewCount : 0,
+                'albumThumbnailCount'=>  isset($albumThumbnailCount) ? $albumThumbnailCount : 0,
+            ];
+
+        }
+
+
+            $itemizedCounts[$itemID] = [
+                'albumsCount' => $counts['albumsCount'],
+                'albumImagesCount' => $counts['albumPreviewCount'],
+                'standaloneImagesCount'   => $counts['masterCount']
+            ];
+
+
+            $children = \DB::table('collection')
+                            ->where('collectionID', $itemID)
+                            ->get();
+
+
+            foreach ($children as $child) {
+
+                $itemID = $child->itemID;
+
+                $nCounts = $this->getDetails($itemID, $debug, $itemizedCounts);
+                $mCounts = $nCounts['counts'];
+
+                $counts = $this->_array_sum_by_key($counts, $mCounts);
+
+
+        }
+
+        return ['counts' => $counts, 'itemizedCounts' => $itemizedCounts];
+
+    }
+
+
+    public function getDetails($itemID, $debug = false, &$itemizedCounts=[])
+    {
+        $counts = [
+            'masterCount'       =>  0,
+            'comasterCount'     =>  0,
+            'hiresCount'        =>  0,
+            'stdresCount'       =>  0,
+            'previewCount'      =>  0,
+            'thumbnailCount'    =>  0,
+
+            'albumsCount'       =>  0,
+            'albumMasterCount'   =>  0,
+            'albumComasterCount' =>  0,
+            'albumHiresCount'    =>  0,
+            'albumStdresCount'   =>  0,
+            'albumPreviewCount'  =>  0,
+            'albumThumbnailCount'=>  0,
+        ];
+        $albumsCount = 0;
+        // Fetch the item row
+        $itemRow = \DB::table('item')
+                    ->where('itemID',$itemID)
+                    ->first();
+
+        if (!$itemRow) {
+            throw new \InvalidArgumentException( 'Row not found for this itemID');
+        }
+
+        $alId = false;
+        // get the digital id
+        $digitalId = $itemRow->masterKey;
+
+        $itemTextRow = \DB::table('itemtext')
+                        ->where('itemID', $itemID)
+                        ->first();
+
+        if ($itemTextRow) {
+            $alId = $itemTextRow->album_id;
+
+            if ($alId) {
+            $albumRow = \DB::table('item')
+                        ->where('itemID',$alId)
+                        ->first();
+
+                    }
+        }
+
+
+
+        if ($digitalId != 'NULL') {
+
+
+            // if no row found
+            if (!$alId) {
                 $masterCount = $this->_getRepCountByDigitalID($digitalId, self::REP_MASTER);
                 $comasterCount = $this->_getRepCountByDigitalID($digitalId, self::REP_COMASTER);
                 $previewCount = $this->_getRepCountByDigitalID($digitalId, self::REP_PREVIEW);
