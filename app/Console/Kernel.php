@@ -13,7 +13,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\TraversePath::class
+        Commands\TraversePath::class,
+        Commands\ImportMilleniumAlbums::class
     ];
 
     /**

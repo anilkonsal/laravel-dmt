@@ -19,7 +19,7 @@
                         {{ csrf_field() }}
                         <div class="form-group{{ $errors->has('item_id') ? ' has-error' : '' }}">
                             <label for="item_id" class="col-md-4 control-label">Enter the Item ID for which you want to search</label>
-                            
+
                             <div class="col-md-6">
                                 <input id="item_id" type="text" class="form-control" name="item_id" value="{{ old('item_id') }}" required autofocus>
 
@@ -30,7 +30,7 @@
                                 @endif
 
                                 <br/>
-                                <input id="debug" type="checkbox" name="debug" value="1">&nbsp;&nbsp;Show Itemized Report as well<br/>
+                                <input id="debug" type="checkbox" name="debug" value="yes">&nbsp;&nbsp;Show Itemized Report as well<br/>
 
                             </br/>
                                 <button type="submit" class="btn btn-primary">
