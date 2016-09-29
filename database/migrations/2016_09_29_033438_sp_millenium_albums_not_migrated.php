@@ -105,7 +105,6 @@ END
 EOSP;
 
     \DB::unprepared($sql);
-
     }
 
     /**
