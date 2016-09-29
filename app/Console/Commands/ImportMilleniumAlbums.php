@@ -3,7 +3,11 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-
+/**
+ * This command is used to go through the csv file with millenium records for
+ * standalone and album images, parses the links and markes these in the 'item'
+ * table as 'm'
+ */
 class ImportMilleniumAlbums extends Command
 {
     /**
@@ -18,7 +22,9 @@ class ImportMilleniumAlbums extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'This command is used to go through the csv file with millenium records for
+    standalone and album images, parses the links and markes these in the \'item\'
+    table as \'m\'';
 
     /**
      * Create a new command instance.
@@ -61,17 +67,34 @@ class ImportMilleniumAlbums extends Command
                             if (count($linkArr) > 1)
                             {
                                 foreach ($linkArr as $link) {
+                                    $l = trim($link,'"');
                                     if (strpos($link, '/image/') === FALSE) {
-                                        $l = trim($link,'"');
                                         $this->markInDb($l);
+                                    } else {
+                                        $this->markImageInDb($l);
                                     }
                                 }
 
                             } else {
                                 $l = trim($links,'"');
-                                $this->markInDb($l);
+                                //$this->markInDb($l);
                             }
 
+                        } elseif (strpos($links, 'image') !== FALSE){
+                            $linkArr = explode(';', $links);
+                            if (count($linkArr) > 1)
+                            {
+                                foreach ($linkArr as $link) {
+                                    if (strpos($link, '/image/') !== FALSE) {
+                                        $l = trim($link,'"');
+                                        $this->markImageInDb($l);
+                                    }
+                                }
+
+                            } else {
+                                $l = trim($links,'"');
+                                $this->markImageInDb($l);
+                            }
                         }
                     }
                 }
@@ -86,7 +109,29 @@ class ImportMilleniumAlbums extends Command
         if (array_key_exists('query', $pUrl)) {
             $query = $pUrl['query'];
             $queryArr = parse_str($query);
-            echo "$itemID\n";
+            //echo "$itemID\n";
+
+            \DB::table('item')
+                ->where('itemID', $itemID)
+                ->update(['acms_mill' => 'm']);
+
+
+
         }
     }
+
+    public function markImageInDb($link)
+    {
+        $filename = basename($link);
+        $basename = pathinfo($filename, PATHINFO_FILENAME);
+        $digitalId = trim($basename, "rhupt");
+
+        \DB::table('item')
+            ->where('itemKey', $digitalId)
+            ->where('assetType', 'image')
+            ->where('itemType', 'image')
+            ->update(['acms_mill' => 'm', 'album_standalone' => 's']);
+
+    }
+
 }

@@ -9,6 +9,15 @@ use App\Http\Requests;
 use App\Services\ItemService;
 class ReportController extends Controller
 {
+
+    public function totalAlbumCounts(ItemService $itemService)
+    {
+        $counts = $itemService->getTotalAlbumCounts();
+        return view('report.total-album-counts', [
+            'counts' => $counts,
+        ]);
+    }
+
     public function total(ItemService $itemService)
     {
         $mastersCount = $itemService->getMastersCount();
@@ -122,6 +131,20 @@ class ReportController extends Controller
         $counts = $itemService->getStandaloneImagesNotMigratedCounts();
         $counts = $counts[0];
         return view('report.standalone-images-not-migrated', ['counts' => $counts]);
+    }
+
+    public function acmsAlbumsMigration(ItemService $itemService)
+    {
+        $counts = $itemService->acmsAlbumsMigrationCounts();
+        $counts = $counts[0];
+        return view('report.acms-albums-migration', ['counts' => $counts]);
+    }
+
+    public function milleniumAlbumsMigration(ItemService $itemService)
+    {
+        $counts = $itemService->milleniumAlbumsMigrationCounts();
+        $counts = $counts[0];
+        return view('report.millenium-albums-migration', ['counts' => $counts]);
     }
 
 }

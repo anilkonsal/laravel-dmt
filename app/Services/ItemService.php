@@ -94,4 +94,19 @@ class ItemService {
         return $this->itemRepository->getStandaloneImagesNotMigratedCounts();
     }
 
+    public function acmsAlbumsMigrationCounts()
+    {
+        return $this->itemRepository->acmsAlbumsMigrationCounts();
+    }
+
+    public function milleniumAlbumsMigrationCounts()
+    {
+        return $this->itemRepository->milleniumAlbumsMigrationCounts();
+    }
+
+    public function getTotalAlbumCounts()
+    {
+        return $this->itemRepository->getTotalAlbumCounts();
+    }
+
 }

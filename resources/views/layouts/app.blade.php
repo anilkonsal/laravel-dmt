@@ -45,10 +45,15 @@
                     <li class="dropdown">
                       <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports <span class="caret"></span></a>
                       <ul class="dropdown-menu">
-                        <li><a href="{{ route('total_report') }}">Total Images Report</a></li>
-                        <li><a href="{{ route('album_report') }}">Album Images Report</a></li>
-                        <li><a href="{{ route('standalone_report') }}">Stand Alone Images Report</a></li>
-                        <li><a href="{{ route('album_images_not_migrated_report') }}">Album Images not Migrated</a></li>
+                        <li><a href="{{ route('total_album_counts_report') }}">Total Albums Report</a></li>
+                        <li><a href="{{ route('total_report') }}">Total Images Status</a></li>
+                        <li><a href="{{ route('album_report') }}">Album Images Status</a></li>
+                        <li><a href="{{ route('standalone_report') }}">Stand Alone Images Status</a></li>
+                        <li><a href="{{ route('album_images_not_migrated_report') }}">Album Images Migration Status</a></li>
+                        <li><a href="{{ route('standalone_images_not_migrated_report') }}">Standalone Images Migration Status</a></li>
+                        <li><a href="{{ route('acms_albums_migration_report') }}">ACMS Albums Migration Status</a></li>
+                        <li><a href="{{ route('millenium_albums_migration_report') }}">Millenium Albums Migration Status</a></li>
+
                       </ul>
                     </li>
                     <li>

@@ -54,6 +54,33 @@ class ItemRepository {
         self::REP_THUMBNAIL     =>  'jpg',
     ];
 
+    /**
+     * Function to get the total number of Albums in the DAM
+     * and total number of not empty albums in the DAM
+     * @return Array
+     */
+    public function getTotalAlbumCounts()
+    {
+        $totalAlbumCount = $this->getAlbumsCount();
+
+        $notEmptyAlbumCount = \DB::table('item')
+                                ->whereIn('itemID', function($query) {
+                                    $query->select('item.itemID')
+                                        ->from('item')
+                                        ->join('collection','item.itemID', '=', 'collection.collectionID')
+                                        ->where('assetType', 'image')
+                                        ->where('itemType', 'album');
+                                })
+                                ->where('assetType', 'image')
+                                ->where('itemType', 'album')
+                                ->count();
+
+        return [
+                'totalAlbumCount'  =>  $totalAlbumCount,
+                'notEmptyAlbumCount' => $notEmptyAlbumCount
+            ];
+    }
+
     public function getMastersCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_MASTER);
@@ -395,6 +422,18 @@ class ItemRepository {
         return $counts;
     }
 
+    public function acmsAlbumsMigrationCounts()
+    {
+        $counts = \DB::select('call acms_albums_not_migrated()');
+        return $counts;
+    }
+
+    public function milleniumAlbumsMigrationCounts()
+    {
+        $counts = \DB::select('call millenium_albums_not_migrated()');
+        return $counts;
+    }
+
 
 
     protected function _getRepCountByDigitalID($digitalId, $representation)
@@ -439,4 +478,6 @@ class ItemRepository {
         }
         return $array;
     }
+
+
 }

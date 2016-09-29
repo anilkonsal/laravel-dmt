@@ -19,6 +19,12 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index');
 
+Route::get('/report/total-album-counts', [
+    'as'    =>  'total_album_counts_report',
+    'middleware' => 'auth',
+    'uses'  =>  'ReportController@totalAlbumCounts'
+]);
+
 Route::get('/report/total', [
     'as'    =>  'total_report',
     'middleware' => 'auth',
@@ -56,4 +62,14 @@ Route::post('/report/details', [
     'as'    =>  'details_report',
     'middleware' => 'auth',
     'uses'  =>  'ReportController@details'
+]);
+Route::get('/report/acms-albums-migration', [
+    'as'    =>  'acms_albums_migration_report',
+    'middleware' => 'auth',
+    'uses'  =>  'ReportController@acmsAlbumsMigration'
+]);
+Route::get('/report/millenium-albums-migration', [
+    'as'    =>  'millenium_albums_migration_report',
+    'middleware' => 'auth',
+    'uses'  =>  'ReportController@milleniumAlbumsMigration'
 ]);

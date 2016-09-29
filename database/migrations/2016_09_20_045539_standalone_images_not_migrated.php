@@ -15,19 +15,22 @@ class StandaloneImagesNotMigrated extends Migration
     {
         $sql=<<<EOSP
         DROP PROCEDURE IF EXISTS `standalone_images_not_migrated`;
-        CREATE  PROCEDURE standalone_images_not_migrated()
-BEGIN
+        CREATE PROCEDURE `standalone_images_not_migrated`()
+    BEGIN
 	DECLARE done INT DEFAULT FALSE;
     DECLARE mCount, cCount, hCount, lCount, pCount, tCount INT DEFAULT 0;
-    DECLARE totalMasterCount, totalCoMasterCount,totalHiResCount, totalStdResCount, totalPreviewCount, totalThumbnailCount INT DEFAULT 0;
-    DECLARE mastersCount,comastersCount, hiresCount, stdresCount, previewCount, thumbnailCount INT DEFAULT 0;
+    DECLARE totalMasterCountAcms, totalCoMasterCountAcms,totalHiResCountAcms, totalStdResCountAcms, totalPreviewCountAcms, totalThumbnailCountAcms INT DEFAULT 0;
+    DECLARE totalMasterCountMill, totalCoMasterCountMill,totalHiResCountMill, totalStdResCountMill, totalPreviewCountMill, totalThumbnailCountMill INT DEFAULT 0;
+    DECLARE mastersCountAcms,comastersCountAcms, hiresCountAcms, stdresCountAcms, previewCountAcms, thumbnailCountAcms INT DEFAULT 0;
+    DECLARE mastersCountMill,comastersCountMill, hiresCountMill, stdresCountMill, previewCountMill, thumbnailCountMill INT DEFAULT 0;
     DECLARE mRoot, mFolder, mYear, cKey, digitalId, subfolders varchar(100);
+    DECLARE aMType varchar(1);
     DECLARE yfk varchar(100);
 
 
     DECLARE StandAloneImages CURSOR FOR
         select
-			masterKey, masterFolder, masterRoot, wpath
+			masterKey, masterFolder, masterRoot, wpath, acms_mill
 		from
 			item i
 		where itemID not in(
@@ -75,12 +78,10 @@ BEGIN
 	and i.assetType = 'image'
 	and i.itemType='image'
     and i.status<>'rejected'
-	and masterRoot like '_MASTER%' into totalMasterCount;
+    and i.acms_mill is null
+	and masterRoot like '_MASTER%' into totalMasterCountAcms;
 
-
-
-
-     select count(id) from item i where itemID not in(
+    select count(id) from item i where itemID not in(
 		select
 			i.itemID
 		from
@@ -98,9 +99,13 @@ BEGIN
 	and i.assetType = 'image'
 	and i.itemType='image'
     and i.status<>'rejected'
-	and fromRoot like '_COMASTER%' into totalCoMasterCount;
+    and i.acms_mill = 'm'
+	and masterRoot like '_MASTER%' into totalMasterCountMill;
 
-     select count(id) from item i where itemID not in(
+
+
+
+	select count(id) from item i where itemID not in(
 		select
 			i.itemID
 		from
@@ -118,9 +123,10 @@ BEGIN
 	and i.assetType = 'image'
 	and i.itemType='image'
     and i.status<>'rejected'
-	and wroot like '_DAMx%' into totalHiResCount;
+    and i.acms_mill is null
+	and fromRoot like '_COMASTER%' into totalCoMasterCountAcms;
 
-	 select count(id) from item i where itemID not in(
+	select count(id) from item i where itemID not in(
 		select
 			i.itemID
 		from
@@ -138,9 +144,10 @@ BEGIN
 	and i.assetType = 'image'
 	and i.itemType='image'
     and i.status<>'rejected'
-	and lroot like '_DAMl%' into totalStdResCount;
+    and i.acms_mill = 'm'
+	and fromRoot like '_COMASTER%' into totalCoMasterCountMill;
 
-     select count(id) from item i where itemID not in(
+	select count(id) from item i where itemID not in(
 		select
 			i.itemID
 		from
@@ -158,9 +165,10 @@ BEGIN
 	and i.assetType = 'image'
 	and i.itemType='image'
     and i.status<>'rejected'
-	and proot like '_DAMp%' into totalPreviewCount;
+    and i.acms_mill is null
+	and wroot like '_DAMx%' into totalHiResCountAcms;
 
-     select count(id) from item i where itemID not in(
+	select count(id) from item i where itemID not in(
 		select
 			i.itemID
 		from
@@ -178,14 +186,144 @@ BEGIN
 	and i.assetType = 'image'
 	and i.itemType='image'
     and i.status<>'rejected'
-        and troot like '_DAMt%' into totalThumbnailCount;
+    and i.acms_mill = 'm'
+	and wroot like '_DAMx%' into totalHiResCountMill;
+
+
+	select count(id) from item i where itemID not in(
+		select
+			i.itemID
+		from
+			item i
+		where i.itemID in (
+				select c.itemID from item i
+				inner join collection c on i.itemID = c.collectionID
+				where i.assetType='image' and i.itemType='album'
+			)
+
+		and
+			i.assetType = 'image'
+			and i.itemType='image'
+	)
+	and i.assetType = 'image'
+	and i.itemType='image'
+    and i.status<>'rejected'
+    and i.acms_mill is null
+	and lroot like '_DAMl%' into totalStdResCountAcms;
+
+	select count(id) from item i where itemID not in(
+		select
+			i.itemID
+		from
+			item i
+		where i.itemID in (
+				select c.itemID from item i
+				inner join collection c on i.itemID = c.collectionID
+				where i.assetType='image' and i.itemType='album'
+			)
+
+		and
+			i.assetType = 'image'
+			and i.itemType='image'
+	)
+	and i.assetType = 'image'
+	and i.itemType='image'
+    and i.status<>'rejected'
+    and i.acms_mill = 'm'
+	and lroot like '_DAMl%' into totalStdResCountMill;
+
+
+	select count(id) from item i where itemID not in(
+		select
+			i.itemID
+		from
+			item i
+		where i.itemID in (
+				select c.itemID from item i
+				inner join collection c on i.itemID = c.collectionID
+				where i.assetType='image' and i.itemType='album'
+			)
+
+		and
+			i.assetType = 'image'
+			and i.itemType='image'
+	)
+	and i.assetType = 'image'
+	and i.itemType='image'
+    and i.status<>'rejected'
+    and i.acms_mill is null
+	and proot like '_DAMp%' into totalPreviewCountAcms;
+
+	select count(id) from item i where itemID not in(
+		select
+			i.itemID
+		from
+			item i
+		where i.itemID in (
+				select c.itemID from item i
+				inner join collection c on i.itemID = c.collectionID
+				where i.assetType='image' and i.itemType='album'
+			)
+
+		and
+			i.assetType = 'image'
+			and i.itemType='image'
+	)
+	and i.assetType = 'image'
+	and i.itemType='image'
+    and i.status<>'rejected'
+    and i.acms_mill = 'm'
+	and proot like '_DAMp%' into totalPreviewCountMill;
+
+
+
+	select count(id) from item i where itemID not in(
+		select
+			i.itemID
+		from
+			item i
+		where i.itemID in (
+				select c.itemID from item i
+				inner join collection c on i.itemID = c.collectionID
+				where i.assetType='image' and i.itemType='album'
+			)
+		and
+			i.assetType = 'image'
+			and i.itemType='image'
+	)
+	and i.assetType = 'image'
+	and i.itemType='image'
+    and i.status<>'rejected'
+    and i.acms_mill is null
+	and troot like '_DAMt%' into totalThumbnailCountAcms;
+
+	select count(id) from item i where itemID not in(
+		select
+			i.itemID
+		from
+			item i
+		where i.itemID in (
+				select c.itemID from item i
+				inner join collection c on i.itemID = c.collectionID
+				where i.assetType='image' and i.itemType='album'
+			)
+		and
+			i.assetType = 'image'
+			and i.itemType='image'
+	)
+	and i.assetType = 'image'
+	and i.itemType='image'
+    and i.status<>'rejected'
+    and i.acms_mill = 'm'
+	and troot like '_DAMt%' into totalThumbnailCountMill;
+
 
 
 
     OPEN StandAloneImages;
 
     read_loop: LOOP
-		FETCH StandAloneImages into digitalId, mFolder, mRoot, subfolders;
+		FETCH StandAloneImages into digitalId, mFolder, mRoot, subfolders, aMType;
         IF done = 1 THEN
 			LEAVE read_loop;
 		END IF;
@@ -219,11 +357,18 @@ BEGIN
 		END IF;
 
 
+       IF (aMType = 'm') THEN
+			SET mastersCountMill = mastersCountMill + mCount;
+            SET comastersCountMill = comastersCountMill + cCount;
+            SET hiresCountMill = hiresCountMill + hCount;
+            SET stdresCountMill = stdresCountMill + lCount;
+		ELSE
+			SET mastersCountAcms = mastersCountAcms + mCount;
+            SET comastersCountAcms = comastersCountAcms + cCount;
+            SET hiresCountAcms = hiresCountAcms + hCount;
+            SET stdresCountAcms = stdresCountAcms + lCount;
+		END IF;
 
-	   SET mastersCount = mastersCount + mCount;
-	   SET comastersCount = comastersCount + cCount;
-	   SET hiresCount = hiresCount + hCount;
-	   SET stdresCount = stdresCount + lCount;
 
 
        #insert into temp_debug (`mkey`, `mCount`, `cCount`, `hCount`, `lCount`, `pCount`, `tCount`) values (mKey, mCount, cCount, hCount, lCount, pCount, tCount);
@@ -232,14 +377,45 @@ BEGIN
 
     close StandAloneImages;
 
-    SET mastersCount = totalMasterCount - mastersCount;
-    SET comastersCount = totalCoMasterCount - comastersCount;
-    SET hiresCount = totalHiResCount - hiresCount;
-    SET stdresCount = totalStdResCount - stdresCount;
-    SET previewCount = totalPreviewCount - previewCount;
-    SET thumbnailCount = totalThumbnailCount - thumbnailCount;
+    SET mastersCountAcms = totalMasterCountAcms - mastersCountAcms;
+    SET mastersCountMill = totalMasterCountMill - mastersCountMill;
+    SET comastersCountAcms = totalCoMasterCountAcms - comastersCountAcms;
+    SET comastersCountMill = totalCoMasterCountMill - comastersCountMill;
+    SET hiresCountAcms = totalHiResCountAcms - hiresCountAcms;
+    SET hiresCountMill = totalHiResCountMill - hiresCountMill;
+    SET stdresCountAcms = totalStdResCountAcms - stdresCountAcms;
+    SET stdresCountMill = totalStdResCountMill - stdresCountMill;
+    SET previewCountAcms = totalPreviewCountAcms - previewCountAcms;
+    SET previewCountMill = totalPreviewCountMill - previewCountMill;
+    SET thumbnailCountAcms = totalThumbnailCountAcms - thumbnailCountAcms;
+    SET thumbnailCountMill = totalThumbnailCountMill - thumbnailCountMill;
 
-    select mastersCount, comastersCount, hiresCount, stdresCount, previewCount, thumbnailCount, totalMasterCount, totalCoMasterCount, totalHiResCount, totalStdResCount, totalPreviewCount, totalThumbnailCount;
+    select
+		mastersCountAcms,
+        mastersCountMill,
+        comastersCountAcms,
+        comastersCountMill,
+        hiresCountAcms,
+        hiresCountMill,
+        stdresCountAcms,
+        stdresCountMill,
+        previewCountAcms,
+        previewCountMill,
+        thumbnailCountAcms,
+        thumbnailCountMill,
+
+        totalMasterCountAcms,
+        totalMasterCountMill,
+        totalCoMasterCountAcms,
+        totalCoMasterCountMill,
+        totalHiResCountAcms,
+        totalHiResCountMill,
+        totalStdResCountAcms,
+        totalStdResCountMill,
+        totalPreviewCountAcms,
+        totalPreviewCountMill,
+        totalThumbnailCountAcms,
+        totalThumbnailCountMill;
 
 END
 EOSP;
