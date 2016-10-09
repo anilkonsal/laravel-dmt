@@ -6,11 +6,8 @@
         <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <dc:identifier>18776</dc:identifier>
 		  <dc:title>Item 02: [Maned or Wood] Duck [&amp;] Drake, ca 1792 / Sydney Bird Painter</dc:title>
-          <dc:creator></dc:creator>
-		  <dc:source>PXD 680     /     2</dc:source>
-		  <dc:type>,GM,</dc:type>
-          <dcterms:accessRights>No</dcterms:accessRights>
-		  <dc:date>1994-12-20 00:00:00.000</dc:date>
+          		   <dc:source>PXD 680     /     2</dc:source> 		    <dc:type>Graphic Materials</dc:type>           <dcterms:accessRights>No</dcterms:accessRights>
+		  <dc:date>1994-12-20</dc:date>
 		  <dcterms:isFormatOf></dcterms:isFormatOf>
 		  <dcterms:isReferencedBy>ACMS</dcterms:isReferencedBy>
         </dc:record>
@@ -23,12 +20,12 @@
       <mets:xmlData>
         <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <dc:title>Item 02: [Maned or Wood] Duck [&amp;] Drake, ca 1792 / Sydney Bird Painter</dc:title>
-          <dc:source>_MASTER/2008/D00012/a1763002.tif</dc:source>
-          <dc:description>http://acms.sl.nsw.gov.au/_MASTER/2008/D00012/a1763002.tif</dc:description>
+          <dc:source>_MASTER/2008/D00012/a1763002u.tif</dc:source>
+          <dc:description>http://acms.sl.nsw.gov.au/_MASTER/2008/D00012/a1763002u.tif</dc:description>
           <dc:identifier>18776</dc:identifier>
-          <dc:date>1900-01-01 00:00:00.000</dc:date>
+          <dc:date>1900-01-01</dc:date>
           <dcterms:tableOfContents>1</dcterms:tableOfContents>
-		  <dcterms:isFormatOf>|Zoomable imageÂ¤http://acms.sl.nsw.gov.au/_zoomify/2012/D16211/a1763002.html|</dcterms:isFormatOf>
+		  <dcterms:isFormatOf>http://acms.sl.nsw.gov.au/_zoomify/2012/D16211/a1763002.html</dcterms:isFormatOf>
         </dc:record>
       </mets:xmlData>
     </mets:mdWrap>
@@ -42,9 +39,9 @@
           <dc:source>_COMASTER/2008/D00012/a1763002.tif</dc:source>
           <dc:description>http://acms.sl.nsw.gov.au/_COMASTER/2008/D00012/a1763002.tif</dc:description>
           <dc:identifier>18776</dc:identifier>
-          <dc:date>1900-01-01 00:00:00.000</dc:date>
+          <dc:date>1900-01-01</dc:date>
           <dcterms:tableOfContents>1</dcterms:tableOfContents>
-		  <dcterms:isFormatOf>|Zoomable imageÂ¤http://acms.sl.nsw.gov.au/_zoomify/2012/D16211/a1763002.html|</dcterms:isFormatOf>
+		  <dcterms:isFormatOf>http://acms.sl.nsw.gov.au/_zoomify/2012/D16211/a1763002.html</dcterms:isFormatOf>
         </dc:record>
       </mets:xmlData>
     </mets:mdWrap>
@@ -56,11 +53,11 @@
         <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <dc:title>Item 02: [Maned or Wood] Duck [&amp;] Drake, ca 1792 / Sydney Bird Painter</dc:title>
           <dc:source>/permanent_storage/legacy/derivatives/highres/image/10/149/a1763002h.jpg</dc:source>
-          <dc:description>http://acms.sl.nsw.gov.au//permanent_storage/legacy/derivatives/highres/image/10/149/a1763002h.jpg</dc:description>
+          <dc:description>http://acms.sl.nsw.gov.au/permanent_storage/legacy/derivatives/highres/image/10/149/a1763002h.jpg</dc:description>
           <dc:identifier>18776</dc:identifier>
-          <dc:date>1900-01-01 00:00:00.000</dc:date>
+          <dc:date>1900-01-01</dc:date>
           <dcterms:tableOfContents>1</dcterms:tableOfContents>
-		  <dcterms:isFormatOf>|Zoomable imageÂ¤http://acms.sl.nsw.gov.au/_zoomify/2012/D16211/a1763002.html|</dcterms:isFormatOf>
+		  <dcterms:isFormatOf>http://acms.sl.nsw.gov.au/_zoomify/2012/D16211/a1763002.html</dcterms:isFormatOf>
         </dc:record>
       </mets:xmlData>
     </mets:mdWrap>
@@ -248,7 +245,7 @@
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
             <section id="generalFileCharacteristics">
               <record>
-                <key id="fileOriginalPath">/permanent_storage/legacy/master/D00012/a1763002.tif</key>
+                <key id="fileOriginalPath">/permanent_storage/legacy/master/D00012/a1763002u.tif</key>
                 <key id="fileOriginalName">a1763002u.tif</key>
                 <key id="label">Item 02: [Maned or Wood] Duck [&amp;] Drake, ca 1792 / Sydney Bird Painter</key>
               </record>
@@ -376,7 +373,7 @@
   <mets:fileSec>
     <mets:fileGrp ID="rep1" ADMID="rep1-amd">
       <mets:file ID="fid1-1" ADMID="fid1-1-amd">
-        <mets:FLocat LOCTYPE="URL" xlin:href="_MASTER/2008/D00012/a1763002.tif" xmlns:xlin="http://www.w3.org/1999/xlink"/>
+        <mets:FLocat LOCTYPE="URL" xlin:href="_MASTER/2008/D00012/a1763002u.tif" xmlns:xlin="http://www.w3.org/1999/xlink"/>
       </mets:file>
     </mets:fileGrp>
     <mets:fileGrp ID="rep2" ADMID="rep2-amd">

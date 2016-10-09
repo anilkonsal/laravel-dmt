@@ -6,12 +6,12 @@
         <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <dc:identifier>{{ $ie_dmd_identifier }}</dc:identifier>
 		  <dc:title>{{ $ie_dmd_title }}</dc:title>
-          <dc:creator>{{ $ie_dmd_creator }}</dc:creator>
-		  <dc:source>{{ $ie_dmd_source }}</dc:source>
-		  <dc:type>{{ $ie_dmd_type }}</dc:type>
+          @if (!empty($ie_dmd_creator)) <dc:creator>{{ $ie_dmd_creator }}</dc:creator> @endif
+		  @if (!empty($ie_dmd_source)) <dc:source>{{ $ie_dmd_source }}</dc:source> @endif
+		  @if (!empty($ie_dmd_type)) <dc:type>{{ $ie_dmd_type }}</dc:type> @endif
           <dcterms:accessRights>{{ $ie_dmd_accessRights }}</dcterms:accessRights>
-		  <dc:date>{{ $ie_dmd_date }}</dc:date>
-		  <dcterms:isFormatOf>{{ $ie_dmd_isFormatOf }}</dcterms:isFormatOf>
+		  @if (!empty($ie_dmd_date)) <dc:date>{{ $ie_dmd_date }}</dc:date> @endif
+		  @if (!empty($ie_dmd_isFormatOf)) <dcterms:isFormatOf>{{ $ie_dmd_isFormatOf }}</dcterms:isFormatOf> @endif
 		  <dcterms:isReferencedBy>ACMS</dcterms:isReferencedBy>
         </dc:record>
       </mets:xmlData>
@@ -26,9 +26,9 @@
           <dc:source>{{ $fid1_1_dmd_source }}</dc:source>
           <dc:description>{{ $fid1_1_dmd_description }}</dc:description>
           <dc:identifier>{{ $fid1_1_dmd_identifier }}</dc:identifier>
-          <dc:date>{{ $fid1_1_dmd_date }}</dc:date>
+          @if (!empty($fid1_1_dmd_date)) <dc:date>{{ $fid1_1_dmd_date }}</dc:date> @endif
           <dcterms:tableOfContents>1</dcterms:tableOfContents>
-		  <dcterms:isFormatOf>{{ $fid1_1_dmd_isFormatOf }}</dcterms:isFormatOf>
+		  @if (!empty($fid1_1_dmd_isFormatOf)) <dcterms:isFormatOf>{{ $fid1_1_dmd_isFormatOf }}</dcterms:isFormatOf> @endif
         </dc:record>
       </mets:xmlData>
     </mets:mdWrap>
@@ -42,9 +42,9 @@
           <dc:source>{{ $fid1_2_dmd_source }}</dc:source>
           <dc:description>{{ $fid1_2_dmd_description }}</dc:description>
           <dc:identifier>{{ $fid1_2_dmd_identifier }}</dc:identifier>
-          <dc:date>{{ $fid1_2_dmd_date }}</dc:date>
+          @if (!empty($fid1_2_dmd_date)) <dc:date>{{ $fid1_2_dmd_date }}</dc:date> @endif
           <dcterms:tableOfContents>1</dcterms:tableOfContents>
-		  <dcterms:isFormatOf>{{ $fid1_2_dmd_isFormatOf }}</dcterms:isFormatOf>
+		  @if (!empty($fid1_2_dmd_isFormatOf)) <dcterms:isFormatOf>{{ $fid1_2_dmd_isFormatOf }}</dcterms:isFormatOf> @endif
         </dc:record>
       </mets:xmlData>
     </mets:mdWrap>
@@ -58,9 +58,9 @@
           <dc:source>{{ $fid1_3_dmd_source }}</dc:source>
           <dc:description>{{ $fid1_3_dmd_description }}</dc:description>
           <dc:identifier>{{ $fid1_3_dmd_identifier }}</dc:identifier>
-          <dc:date>{{ $fid1_3_dmd_date }}</dc:date>
+          @if (!empty($fid1_3_dmd_date)) <dc:date>{{ $fid1_3_dmd_date }}</dc:date> @endif
           <dcterms:tableOfContents>1</dcterms:tableOfContents>
-		  <dcterms:isFormatOf>{{ $fid1_3_dmd_isFormatOf }}</dcterms:isFormatOf>
+		  @if (!empty($fid1_3_dmd_isFormatOf)) <dcterms:isFormatOf>{{ $fid1_3_dmd_isFormatOf }}</dcterms:isFormatOf> @endif
         </dc:record>
       </mets:xmlData>
     </mets:mdWrap>

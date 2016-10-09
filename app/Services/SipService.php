@@ -14,10 +14,13 @@ class SipService {
 
     public function generateItemSip($itemId)
     {
-        $mainFolder = $this->_generateFolders($itemId);
-
 
         $data = $this->_itemRepository->getSipDataForStandAlone($itemId);
+
+        if ($data === false) {
+            return false;
+        }
+        $mainFolder = $this->_generateFolders($itemId);
 
         $xml = view('xml.sip.standalone', [
             'ie_dmd_identifier'     => $data['ie_dmd_identifier'],
@@ -89,15 +92,21 @@ class SipService {
 
         foreach ($itemizedCounts as $childItemId => $counts) {
             if ($counts['standaloneImagesCount'] > 0) {
-                $folders[] = $this->generateItemSip($childItemId);
+                $result = $this->generateItemSip($childItemId);
+                if ($result !== false) {
+                    $folders[] = $result;
+                }
+
             }
         }
 
 
-
         if (count($folders) > 0) {
             $zip = new \ZipArchive();
-            $zipFilePath = public_path().'/downloads/sips/sips-'.$itemId.'-'.date('YmdHis').'.zip';
+            $zipRelativePath = '/downloads/sips/sips-'.$itemId.'-'.date('YmdHis').'.zip';
+
+            $zipFilePath = public_path(). $zipRelativePath;
+            $zipFileUrl =  $zipRelativePath;
 
             $zip->open( $zipFilePath, \ZipArchive::CREATE);
 
@@ -128,7 +137,7 @@ class SipService {
 
             }
             $zip->close();
-            return $zipFilePath;
+            return $zipFileUrl;
         }
         return false;
     }
@@ -144,7 +153,7 @@ class SipService {
 
         $dcIdentifierFolder = $sipFolder.'/dc_identifier_'.$itemId;
         $contentFolder = $dcIdentifierFolder.'/content';
-        $streamFolder = $dcIdentifierFolder.'/streams';
+        $streamFolder = $contentFolder.'/streams';
 
         @mkdir($dcIdentifierFolder, 0775, true);
         @mkdir($contentFolder, 0775, true);

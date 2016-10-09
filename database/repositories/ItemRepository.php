@@ -54,6 +54,8 @@ class ItemRepository {
         self::REP_THUMBNAIL     =>  'jpg',
     ];
 
+    protected $_log = [];
+
     /**
      * Function to get the total number of Albums in the DAM
      * and total number of not empty albums in the DAM
@@ -480,15 +482,18 @@ class ItemRepository {
     }
 
 
-
+    /**
+     * Function to get the SIP data for a single standalone image
+     * @param  Integer $itemId The item ID of the ACMS Row
+     * @return Array         Data field with differnt items needed to fill in XML
+     */
     public function getSipDataForStandAlone($itemId)
     {
+
         $data = [];
 
         $acmsRow = \DB::table('item')
                     ->where('itemID', $itemId)->first();
-
-        //dd($acmsRow);
 
         $digitalId = $acmsRow->fromKey;
 
@@ -496,8 +501,41 @@ class ItemRepository {
                     ->where('fromKey', $digitalId)
                     ->where('assetType', 'image')
                     ->where('itemType', 'image')
-                    ->first()
-                    ;
+                    ->first();
+
+
+
+
+        $this->_writeLog('Started with item Id: '. $itemId);
+        $this->_writeLog('- ACMS item Id: '. $itemId);
+        $this->_writeLog('- Image item Id: '. $imageRow->itemID);
+
+        /*
+        Check if the item has already been migrated, if yes, then skip this item
+         */
+        if ($this->_isMigrated($imageRow)) {
+            $this->_writeLog('- Migrated: Yes');
+            return false;
+        }
+        $this->_writeLog('- Migrated: No');
+
+        /*
+        Check if the status of both the ACMS and Image Row is active, if no, then skip
+         */
+        if (!$this->_isStatusActive($acmsRow, $imageRow)) {
+            $this->_writeLog('- Status Active : No');
+            return false;
+        }
+        $this->_writeLog('- Status Active: Yes');
+
+        /*
+        Check if the closed field is 'no' for both the ACMS and Image Row, if no, then skip
+         */
+        if (!$this->_isClosedEqualToNo($acmsRow, $imageRow)) {
+            $this->_writeLog('- Closed: Yes');
+            return false;
+        }
+        $this->_writeLog('- Closed: No');
 
 
         $itemTextRow = \DB::table('itemtext')
@@ -509,6 +547,7 @@ class ItemRepository {
                         ->first();
 
         $artist = '';
+
         if (!empty($itemTextRow->at)) {
             $artistRow = \DB::table('artist')
                             ->where('artistID', $itemTextRow->at)
@@ -523,7 +562,7 @@ class ItemRepository {
         $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
         $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
 
-
+        $itemTextRow->al = $this->_getDcType($itemTextRow->al);
 
         $data['ie_dmd_identifier'] = $itemId;
         $data['ie_dmd_title'] = $itemTextRow->ab;
@@ -531,31 +570,33 @@ class ItemRepository {
         $data['ie_dmd_source'] = $itemTextRow->ao;
         $data['ie_dmd_type'] = $itemTextRow->al;
         $data['ie_dmd_accessRights'] = $itemTextRow->cb;
-        $data['ie_dmd_date'] = $itemTextRow->ah;
+        $data['ie_dmd_date'] = $this->_getDatePart($itemTextRow->ah);
         $data['ie_dmd_isFormatOf'] = !empty($itemTextRow->cl) ? $itemTextRow->cl : $itemTextRow->bk;
-
+        $data['ie_dmd_isFormatOf'] = $this->_getUrlPart($data['ie_dmd_isFormatOf']);
 
         $data['fid1_1_dmd_title'] = $itemTextRow->ab;
-        $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "." . $imageRow->fromType;
-        $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "." . $imageRow->fromType;
+        $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
+        $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_dmd_identifier'] = $itemId;
-        $data['fid1_1_dmd_date'] = $imageItemTextRow->ah;
+        $data['fid1_1_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
         $data['fid1_1_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
+        $data['fid1_1_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_1_dmd_isFormatOf']);
 
         $data['fid1_2_dmd_title'] = $itemTextRow->ab;
         $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_dmd_identifier'] = $itemId;
-        $data['fid1_2_dmd_date'] = $imageItemTextRow->ah;
+        $data['fid1_2_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
         $data['fid1_2_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
-
+        $data['fid1_2_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_2_dmd_isFormatOf']);
 
         $data['fid1_3_dmd_title'] = $itemTextRow->ab;
         $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
-        $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au//permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
+        $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
         $data['fid1_3_dmd_identifier'] = $itemId;
-        $data['fid1_3_dmd_date'] = $imageItemTextRow->ah;
+        $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
         $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
+        $data['fid1_3_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_3_dmd_isFormatOf']);
 
         $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
         $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "h." . $imageRow->wtype;
@@ -567,10 +608,11 @@ class ItemRepository {
         if ($supress  == 'Image') {
             $data['fid1_3_dmd_title'] = $itemTextRow->ab;
             $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
-            $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au//permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+            $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
             $data['fid1_3_dmd_identifier'] = $itemId;
-            $data['fid1_3_dmd_date'] = $imageItemTextRow->ah;
+            $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
             $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
+            $data['fid1_3_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_3_dmd_isFormatOf']);
 
             $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->wtype;
             $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "r." . $imageRow->wtype;
@@ -590,7 +632,7 @@ class ItemRepository {
 
 
 
-        $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "." . $imageRow->fromType;
+        $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_amd_fileOriginalName'] = $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_amd_label'] = $itemTextRow->ab;
         $data['fid1_1_amd_groupID'] = $imageRow->itemKey;
@@ -600,22 +642,179 @@ class ItemRepository {
         $data['fid1_2_amd_label'] = $itemTextRow->ab;
         $data['fid1_2_amd_groupID'] = $imageRow->itemKey;
 
-
-
-        $data['rep1_amd_url'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "." . $imageRow->fromType;
+        $data['rep1_amd_url'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['rep2_amd_url'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
-
 
         $data['rep1_1_label'] = $itemTextRow->ab;
         $data['rep2_1_label'] = $itemTextRow->ab;
         $data['rep3_1_label'] = $itemTextRow->ab;
 
+        $this->_writeAndFlushLog('Finished generating data', $itemId);
 
         return $data;
-
     }
 
+    /**
+     * Function to get the DC:Type Full form
+     * @param  String $type The two character type
+     * @return String       The full form of the type
+     */
+    protected function _getDcType($type)
+    {
+        $type = trim($type,' ,');
+
+        $typeMap = [
+             'MM'   =>  'Multiple Media',
+             'TR'   =>  'Textual Records',
+             'GM'   =>  'Graphic Materials',
+             'CM'   =>  'Cartographic Materials',
+             'AT'   =>  'Architectural and Technical Drawings',
+             'MI'   =>  'Moving Images',
+             'SR'   =>  'Sound Recordings',
+             'OB'   =>  'Objects',
+             'PR'   =>  'Philatelic Records',
+             'MS'   =>  'Music'
+        ];
+        return $typeMap[$type];
+    }
+
+    /**
+     * Function to get the date part from the datetime field
+     * @param  String $datetime The datetime field
+     * @return String           The date part
+     */
+    protected function _getDatePart($datetime)
+    {
+        if(empty($datetime)) {
+            return;
+        }
+        list($date, $time) = explode(' ', $datetime);
+        return $date;
+    }
+
+    /**
+     * Function to get the URL part from a mixed string (using Regex)
+     * @param  String $string The input string from which URL has to be extracted
+     * @return String  Either the extracted URL or the input string itself
+     */
+    protected function _getUrlPart($string)
+    {
+        $regex = '/http?:\/\/[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/))/';
+        preg_match($regex, $string, $matches);
+        if (count($matches)) {
+            return  $matches[0];
+        }
+        return $string;
+    }
+
+    /**
+     * Function to check if the image has already been migrated or not
+     * @param  EloquentRowObject  $imageItemRow The image row
+     * @return boolean
+     */
+    protected function _isMigrated($imageItemRow)
+    {
+
+        $year = str_replace('_MASTER\\','', $imageItemRow->masterRoot);
+
+        $yfk = '/' . $year .'/'. $imageItemRow->masterFolder . '/' . $imageItemRow->masterKey;
+
+        $masterPath = '/permanent_storage/legacy/master'. $yfk .'u.tif';
+        $comasterPath = '/permanent_storage/legacy/comaster'. $yfk .'.tif';
+        $highresPath = '/permanent_storage/legacy/derivatives/highres/image/'. $imageItemRow->wpath . '/'. $imageItemRow->masterKey . 'h.jpg';
+        $stdresPath = '/permanent_storage/legacy/derivatives/screenres/image/'. $imageItemRow->wpath . '/'. $imageItemRow->masterKey . 'r.jpg';
+
+        $this->_writeLog('---------------------------------');
+        $this->_writeLog('-- Entered isMigrated Function --');
+        $this->_writeLog('---------------------------------');
+        $this->_writeLog('-- Master Path: '.$masterPath);
+        $this->_writeLog('-- Co Master Path: '.$comasterPath);
+        $this->_writeLog('-- Hires Path: '.$highresPath);
+        $this->_writeLog('-- Stdres Path: '.$stdresPath);
 
 
+        $masterCount = \DB::table('rosetta_migrated')
+                            ->where('file_path', $masterPath)
+                            ->count();
+
+        $comasterCount = \DB::table('rosetta_migrated')
+                            ->where('file_path', $comasterPath)
+                            ->count();
+
+        $highresCount = \DB::table('rosetta_migrated')
+                            ->where('file_path', $highresPath)
+                            ->count();
+
+        $stdresCount = \DB::table('rosetta_migrated')
+                            ->where('file_path', $stdresPath)
+                            ->count();
+
+        $this->_writeLog('-- Master already migrated: '. $masterCount);
+        $this->_writeLog('-- Co Master already migrated: '. $comasterCount);
+        $this->_writeLog('-- Hires already migrated: '. $highresCount);
+        $this->_writeLog('-- Std Res already migrated: '. $stdresCount);
+
+
+        if ($masterCount || $comasterCount || $highresCount || $stdresCount) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Function to check if the status is active for both ACMS
+     * row and the image row
+     * @param  EloquentRowObject  $acmsItemRow
+     * @param  EloquentRowObject  $imageItemRow
+     * @return boolean
+     */
+    protected function _isStatusActive($acmsItemRow, $imageItemRow)
+    {
+        $this->_writeLog('-------------------------------------');
+        $this->_writeLog('-- Entered isStatusActive Function --');
+        $this->_writeLog('-------------------------------------');
+        $this->_writeLog('-- ACMS Row Status: '.$acmsItemRow->status);
+        $this->_writeLog('-- Image Row Status: '.$imageItemRow->status);
+
+        if ($acmsItemRow->status == 'active' && $imageItemRow->status == 'active') {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Function to check if the closed status is No for both ACMS
+     * row and the image row
+     * @param  EloquentRowObject  $acmsItemRow
+     * @param  EloquentRowObject  $imageItemRow
+     * @return boolean
+     */
+    protected function _isClosedEqualToNo($acmsItemRow, $imageItemRow)
+    {
+
+        $this->_writeLog('-- Entered isClosedEqualToNo Function --');
+        $this->_writeLog('-----------------------------------------');
+        $this->_writeLog('-- ACMS Row Closed: '.$acmsItemRow->closed);
+        $this->_writeLog('-- Image Row Closed: '.$imageItemRow->closed);
+
+        if ($acmsItemRow->closed == 'No' && $imageItemRow->closed == 'No') {
+            return true;
+        }
+        return false;
+    }
+
+    protected function _writeLog($string)
+    {
+        $this->_log[] = $string;
+    }
+
+    protected function _writeAndFlushLog($string, $itemId)
+    {
+        $this->_writeLog($string);
+
+        $lines = implode("\r\n", $this->_log);
+        file_put_contents(public_path().'/downloads/sips/log-'.$itemId.'.txt', $lines);
+    }
 
 }
