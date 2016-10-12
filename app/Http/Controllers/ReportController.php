@@ -113,7 +113,7 @@ class ReportController extends Controller
             $allCounts = $itemService->getDetails($itemID, $debug);
             $counts = $allCounts['counts'];
             $itemizedCounts = $allCounts['itemizedCounts'];
-
+            // dd($itemizedCounts);
             return view('report.details', ['item_id' => $itemID, 'count' => $counts, 'itemizedCounts' => $itemizedCounts, 'debug' => $debug]);
         }
         return view('report.details');

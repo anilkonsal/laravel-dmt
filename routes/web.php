@@ -30,6 +30,17 @@ Route::post('/sip/generate-standalone', [
     'uses'  =>  'SipController@generateStandAlone'
 ]);
 
+Route::get('/sip/generate-album', [
+    'as'    =>  'sip_generate_album',
+    'middleware'    =>  'auth',
+    'uses'  =>  'SipController@generateAlbum'
+]);
+Route::post('/sip/generate-album', [
+    'as'    =>  'sip_generate_album',
+    'middleware'    =>  'auth',
+    'uses'  =>  'SipController@generateAlbum'
+]);
+
 
 Route::get('/report/total-album-counts', [
     'as'    =>  'total_album_counts_report',

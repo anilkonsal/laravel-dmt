@@ -7,15 +7,17 @@ use Database\Repositories\ItemRepository;
 class SipService {
     protected $_itemRepository;
 
+
     public function __construct(ItemRepository $itemRepository)
     {
         $this->_itemRepository = $itemRepository;
     }
 
-    public function generateItemSip($itemId)
+
+    public function generateItemSip($itemId, $logFile)
     {
 
-        $data = $this->_itemRepository->getSipDataForStandAlone($itemId);
+        $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile);
 
         if ($data === false) {
             return false;
@@ -84,62 +86,118 @@ class SipService {
         return $mainFolder;
     }
 
-    public function generateSip($itemId)
-    {
+    /**
+     *
+     * Function to generate the
+     * @param  [type] $itemId [description]
+     * @return [type]         [description]
+     */
+    public function generateAlbumItemSip($itemId) {
+        $data = $this->_itemRepository->getSipDataForAlbum($itemId);
 
+        if ($data === false) {
+            return false;
+        }
+        $mainFolder = $this->_generateFolders($itemId);
+
+        $xml = $this->_generateXMLForAlbumSip($data);
+
+        file_put_contents($mainFolder.'/content/ie.xml', $xml);
+        return $mainFolder;
+    }
+
+    protected function _generateXMLForAlbumSip($data)
+    {
+        return '';
+    }
+
+
+    public function generateAlbumSip($itemId)
+    {
         $itemizedCounts = $this->_itemRepository->getDetails($itemId)['itemizedCounts'];
         $folders = [];
 
         foreach ($itemizedCounts as $childItemId => $counts) {
-            if ($counts['standaloneImagesCount'] > 0) {
-                $result = $this->generateItemSip($childItemId);
+            if ($counts['albumsCount'] > 0) {
+                $result = $this->generateAlbumItemSip($childItemId);
                 if ($result !== false) {
                     $folders[] = $result;
                 }
-
             }
         }
-
 
         if (count($folders) > 0) {
-            $zip = new \ZipArchive();
-            $zipRelativePath = '/downloads/sips/sips-'.$itemId.'-'.date('YmdHis').'.zip';
-
-            $zipFilePath = public_path(). $zipRelativePath;
-            $zipFileUrl =  $zipRelativePath;
-
-            $zip->open( $zipFilePath, \ZipArchive::CREATE);
-
-            foreach($folders as $source) {
-                $baseSource = basename($source);
-                $zip->addEmptyDir($source);
-
-                $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($source), \RecursiveIteratorIterator::SELF_FIRST);
-
-                foreach ($files as $file)
-                {
-                   $file = str_replace('\\', '/', $file);
-
-                   if( in_array(substr($file, strrpos($file, '/')+1), array('.', '..')) )
-                       continue;
-
-                   $file = realpath($file);
-
-                   if (is_dir($file) === true)
-                   {
-                       $zip->addEmptyDir($baseSource.'/'.str_replace($source . '/', '', $file .'/'));
-                   }
-                   else if (is_file($file) === true)
-                   {
-                          $zip->addFromString($baseSource.'/'.str_replace($source . '/', '', $file), file_get_contents($file));
-                   }
-               }
-
-            }
-            $zip->close();
-            return $zipFileUrl;
+            return $this->_generateFolders($folders);
         }
+
         return false;
+    }
+    public function generateSip($itemId, $logFile)
+    {
+        $itemizedCounts = $this->_itemRepository->getDetails($itemId)['itemizedCounts'];
+        $folders = [];
+
+
+        if (file_exists($logFile)) {
+            unlink($logFile);
+        }
+
+        foreach ($itemizedCounts as $childItemId => $counts) {
+            if ($counts['standaloneImagesCount'] > 0) {
+                $result = $this->generateItemSip($childItemId, $logFile);
+                if ($result !== false) {
+                    $folders[] = $result;
+                }
+            }
+        }
+
+        if (count($folders) > 0) {
+            return $this->_generateFolders($folders);
+        }
+
+        return false;
+    }
+
+    protected function _generateZip(Array $folders)
+    {
+
+        $zip = new \ZipArchive();
+        $zipRelativePath = '/downloads/sips/sips-'.$itemId.'-'.date('YmdHis').'.zip';
+
+        $zipFilePath = public_path(). $zipRelativePath;
+        $zipFileUrl =  $zipRelativePath;
+
+        $zip->open( $zipFilePath, \ZipArchive::CREATE);
+
+        foreach($folders as $source) {
+            $baseSource = basename($source);
+            $zip->addEmptyDir($source);
+
+            $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($source), \RecursiveIteratorIterator::SELF_FIRST);
+
+            foreach ($files as $file)
+            {
+               $file = str_replace('\\', '/', $file);
+
+               if( in_array(substr($file, strrpos($file, '/')+1), array('.', '..')) )
+                   continue;
+
+               $file = realpath($file);
+
+               if (is_dir($file) === true)
+               {
+                   $zip->addEmptyDir($baseSource.'/'.str_replace($source . '/', '', $file .'/'));
+               }
+               else if (is_file($file) === true)
+               {
+                  $zip->addFromString($baseSource.'/'.str_replace($source . '/', '', $file), file_get_contents($file));
+               }
+           }
+
+        }
+        $zip->close();
+        return $zipFileUrl;
+
     }
 
     /**

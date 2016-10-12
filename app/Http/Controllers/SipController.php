@@ -18,6 +18,43 @@ class SipController extends Controller
                 'item_id' => 'required|integer',
             ]);
 
+            $itemId = trim($request->input('item_id'));
+            $debug = $request->input('debug');
+
+            if (empty($itemId)) {
+                throw new \InvalidArgumentException( 'Please provide the item ID', '400');
+            }
+
+            // $allCounts = $itemService->getDetails($itemID, $debug);
+            // $counts = $allCounts['counts'];
+            // $itemizedCounts = $allCounts['itemizedCounts'];
+
+            $logFile = public_path().'/downloads/sips/log-'.$itemId.'.html';
+            $logFileUrl = '/downloads/sips/log-'.$itemId.'.html';
+            $zipPath = $sipService->generateSip($itemId, $logFile);
+
+
+            return view('sip.standalone', [
+                'itemId' => $itemId,
+                'standAloneZipPath'  =>  $zipPath,
+                'debug' => false,
+                'logFile'   =>  $logFileUrl
+            ]);
+
+
+
+        }
+        return view('sip.standalone');
+
+    }
+    public function generateAlbum(Request $request, SipService $sipService)
+    {
+        if ($request->isMethod('post')) {
+
+            $this->validate($request, [
+                'item_id' => 'required|integer',
+            ]);
+
             $itemID = trim($request->input('item_id'));
             $debug = $request->input('debug');
 
@@ -30,17 +67,15 @@ class SipController extends Controller
             // $itemizedCounts = $allCounts['itemizedCounts'];
 
 
-            $zipPath = $sipService->generateSip($itemID);
-
-
+            $zipPath = $sipService->generateAlbumSip($itemID);
 
             if ($zipPath !== false) {
-                return view('sip.standalone', ['item_id' => $itemID, 'standAloneZipPath'  =>  $zipPath, 'debug' => false]);
+                return view('sip.album', ['item_id' => $itemID, 'albumZipPath'  =>  $zipPath, 'debug' => false]);
             }
 
 
         }
-        return view('sip.standalone');
+        return view('sip.album');
 
     }
 }
