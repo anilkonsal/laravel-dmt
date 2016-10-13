@@ -55,10 +55,10 @@ class SipController extends Controller
                 'item_id' => 'required|integer',
             ]);
 
-            $itemID = trim($request->input('item_id'));
+            $itemId = trim($request->input('item_id'));
             $debug = $request->input('debug');
 
-            if (empty($itemID)) {
+            if (empty($itemId)) {
                 throw new \InvalidArgumentException( 'Please provide the item ID', '400');
             }
 
@@ -67,10 +67,10 @@ class SipController extends Controller
             // $itemizedCounts = $allCounts['itemizedCounts'];
 
 
-            $zipPath = $sipService->generateAlbumSip($itemID);
+            $zipPath = $sipService->generateAlbumSip($itemId);
 
             if ($zipPath !== false) {
-                return view('sip.album', ['item_id' => $itemID, 'albumZipPath'  =>  $zipPath, 'debug' => false]);
+                return view('sip.album', ['item_id' => $itemId, 'albumZipPath'  =>  $zipPath, 'debug' => false]);
             }
 
 

@@ -151,6 +151,7 @@ class SipService {
             }
         }
 
+        //dd($folders);
         if (count($folders) > 0) {
             return $this->_generateFolders($folders);
         }

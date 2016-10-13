@@ -54,6 +54,14 @@ class ItemRepository {
         self::REP_THUMBNAIL     =>  'jpg',
     ];
 
+
+
+    const REASON_ALREADY_MIGRATED = 'Already Migrated!';
+    const REASON_ITEMTEXT_ROW_NOT_FOUND = 'Row does not exist in ItemText table';
+    const REASON_STATUS_INACTIVE = 'Status Inactive';
+    const REASON_CLOSED_IS_YES = 'Closed is Yes';
+    const REASON_FILES_DO_NOT_EXIST_ON_PERM_STORAGE = 'File(s) do not exist on Permanent Storage';
+
     protected $_log = [];
 
     /**
@@ -650,9 +658,10 @@ class ItemRepository {
      */
     public function getSipDataForStandAlone($itemId, $logFile)
     {
-        $this->_log = $logFile;
-
         $data = [];
+        $reason = NULL;
+
+        $this->_log = $logFile;
 
         $acmsRow = \DB::table('item')
                     ->where('itemID', $itemId)->first();
@@ -664,9 +673,6 @@ class ItemRepository {
                     ->where('assetType', 'image')
                     ->where('itemType', 'image')
                     ->first();
-
-
-
 
 
         $this->_writeLog('<h2><u>Started with item Id: '. $itemId.'</u></h2>');
@@ -694,6 +700,7 @@ class ItemRepository {
         $isClosedEqualToNo = $this->_isClosedEqualToNo($acmsRow, $imageRow);
         $this->_writeLog('Closed: ' . ($isClosedEqualToNo ? 'No' : 'Yes'));
 
+        $itemTextRowFound =  true;
 
         $itemTextRow = \DB::table('itemtext')
                         ->where('itemID', $itemId)
@@ -703,134 +710,139 @@ class ItemRepository {
                         ->where('itemID', $imageRow->itemID)
                         ->first();
 
-        $artist = '';
+        if (!empty($itemTextRow)) {
 
-        if (!empty($itemTextRow->at)) {
-            $artistRow = \DB::table('artist')
-                            ->where('artistID', $itemTextRow->at)
-                            ->first();
-            if ($artistRow) {
-                $artist = $artistRow->artist;
+
+            $artist = '';
+
+            if (!empty($itemTextRow->at)) {
+                $artistRow = \DB::table('artist')
+                                ->where('artistID', $itemTextRow->at)
+                                ->first();
+                if ($artistRow) {
+                    $artist = $artistRow->artist;
+                }
             }
-        }
 
-        $supress = $itemTextRow->cb;
+            $supress = $itemTextRow->cb;
 
-        $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
-        $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
+            $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
+            $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
 
-        $itemTextRow->al = $this->_getDcType($itemTextRow->al);
+            $itemTextRow->al = $this->_getDcType($itemTextRow->al);
 
-        $data['ie_dmd_identifier'] = $itemId;
-        $data['ie_dmd_title'] = $itemTextRow->ab;
-        $data['ie_dmd_creator'] = $artist;
-        $data['ie_dmd_source'] = $itemTextRow->ao;
-        $data['ie_dmd_type'] = $itemTextRow->al;
-        $data['ie_dmd_accessRights'] = $itemTextRow->cb;
-        $data['ie_dmd_date'] = $this->_getDatePart($itemTextRow->ah);
-        $data['ie_dmd_isFormatOf'] = !empty($itemTextRow->cl) ? $itemTextRow->cl : $itemTextRow->bk;
-        $data['ie_dmd_isFormatOf'] = $this->_getUrlPart($data['ie_dmd_isFormatOf']);
+            $data['ie_dmd_identifier'] = $itemId;
+            $data['ie_dmd_title'] = $itemTextRow->ab;
+            $data['ie_dmd_creator'] = $artist;
+            $data['ie_dmd_source'] = $itemTextRow->ao;
+            $data['ie_dmd_type'] = $itemTextRow->al;
+            $data['ie_dmd_accessRights'] = $itemTextRow->cb;
+            $data['ie_dmd_date'] = $this->_getDatePart($itemTextRow->ah);
+            $data['ie_dmd_isFormatOf'] = !empty($itemTextRow->cl) ? $itemTextRow->cl : $itemTextRow->bk;
+            $data['ie_dmd_isFormatOf'] = $this->_getUrlPart($data['ie_dmd_isFormatOf']);
 
-        $data['fid1_1_dmd_title'] = $itemTextRow->ab;
-        $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
-        $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
-        $data['fid1_1_dmd_identifier'] = $itemId;
-        $data['fid1_1_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
-        $data['fid1_1_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
-        $data['fid1_1_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_1_dmd_isFormatOf']);
+            $data['fid1_1_dmd_title'] = $itemTextRow->ab;
+            $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
+            $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
+            $data['fid1_1_dmd_identifier'] = $itemId;
+            $data['fid1_1_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
+            $data['fid1_1_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
+            $data['fid1_1_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_1_dmd_isFormatOf']);
 
-        $data['fid1_2_dmd_title'] = $itemTextRow->ab;
-        $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
-        $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
-        $data['fid1_2_dmd_identifier'] = $itemId;
-        $data['fid1_2_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
-        $data['fid1_2_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
-        $data['fid1_2_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_2_dmd_isFormatOf']);
+            $data['fid1_2_dmd_title'] = $itemTextRow->ab;
+            $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
+            $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
+            $data['fid1_2_dmd_identifier'] = $itemId;
+            $data['fid1_2_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
+            $data['fid1_2_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
+            $data['fid1_2_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_2_dmd_isFormatOf']);
 
-        $data['fid1_3_dmd_title'] = $itemTextRow->ab;
-        $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
-        $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
-        $data['fid1_3_dmd_identifier'] = $itemId;
-        $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
-        $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
-        $data['fid1_3_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_3_dmd_isFormatOf']);
-
-        $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
-        $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "h." . $imageRow->wtype;
-        $data['fid1_3_amd_label'] = $itemTextRow->ab;;
-        $data['fid1_3_amd_groupID'] = $imageRow->itemKey;
-
-        $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
-
-        if ($supress  == 'Image') {
             $data['fid1_3_dmd_title'] = $itemTextRow->ab;
-            $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
-            $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+            $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
+            $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
             $data['fid1_3_dmd_identifier'] = $itemId;
             $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
             $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
             $data['fid1_3_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_3_dmd_isFormatOf']);
 
-            $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->wtype;
-            $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "r." . $imageRow->wtype;
-            $data['fid1_3_amd_label'] = $itemTextRow->ab;
+            $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
+            $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "h." . $imageRow->wtype;
+            $data['fid1_3_amd_label'] = $itemTextRow->ab;;
             $data['fid1_3_amd_groupID'] = $imageRow->itemKey;
 
-            $data['rep3_amd_rights'] = 'AR_EVERYONE';
+            $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
 
-            $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->wtype;
+            if ($supress  == 'Image') {
+                $data['fid1_3_dmd_title'] = $itemTextRow->ab;
+                $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+                $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+                $data['fid1_3_dmd_identifier'] = $itemId;
+                $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
+                $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
+                $data['fid1_3_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_3_dmd_isFormatOf']);
 
-        } elseif ($supress == 'No') {
-            $data['rep3_amd_rights'] = 'AR_EVERYONE';
-        } elseif ($supress == 'Yes') {
-            $data['rep3_amd_rights'] = '1062';
-        }
+                $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->wtype;
+                $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "r." . $imageRow->wtype;
+                $data['fid1_3_amd_label'] = $itemTextRow->ab;
+                $data['fid1_3_amd_groupID'] = $imageRow->itemKey;
 
+                $data['rep3_amd_rights'] = 'AR_EVERYONE';
 
-        $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
-        $data['fid1_1_amd_fileOriginalName'] = $imageRow->masterKey . "u." . $imageRow->fromType;
-        $data['fid1_1_amd_label'] = $itemTextRow->ab;
-        $data['fid1_1_amd_groupID'] = $imageRow->itemKey;
+                $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->wtype;
 
-        $data['fid1_2_amd_fileOriginalPath'] = "/permanent_storage/legacy/comaster/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
-        $data['fid1_2_amd_fileOriginalName'] = $imageRow->fromKey . "." . $imageRow->fromType;
-        $data['fid1_2_amd_label'] = $itemTextRow->ab;
-        $data['fid1_2_amd_groupID'] = $imageRow->itemKey;
-
-        $data['rep1_amd_url'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
-        $data['rep2_amd_url'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
-
-        $data['rep1_1_label'] = $itemTextRow->ab;
-        $data['rep2_1_label'] = $itemTextRow->ab;
-        $data['rep3_1_label'] = $itemTextRow->ab;
+            } elseif ($supress == 'No') {
+                $data['rep3_amd_rights'] = 'AR_EVERYONE';
+            } elseif ($supress == 'Yes') {
+                $data['rep3_amd_rights'] = '1062';
+            }
 
 
-        /*
+            $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
+            $data['fid1_1_amd_fileOriginalName'] = $imageRow->masterKey . "u." . $imageRow->fromType;
+            $data['fid1_1_amd_label'] = $itemTextRow->ab;
+            $data['fid1_1_amd_groupID'] = $imageRow->itemKey;
+
+            $data['fid1_2_amd_fileOriginalPath'] = "/permanent_storage/legacy/comaster/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
+            $data['fid1_2_amd_fileOriginalName'] = $imageRow->fromKey . "." . $imageRow->fromType;
+            $data['fid1_2_amd_label'] = $itemTextRow->ab;
+            $data['fid1_2_amd_groupID'] = $imageRow->itemKey;
+
+            $data['rep1_amd_url'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
+            $data['rep2_amd_url'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
+
+            $data['rep1_1_label'] = $itemTextRow->ab;
+            $data['rep2_1_label'] = $itemTextRow->ab;
+            $data['rep3_1_label'] = $itemTextRow->ab;
+
+
+
+            /*
             Check on the Permanent storage if all the three files exist, if any one file does
             not exist, then return false (which leads to this image being skipped for sip generation)
-         */
+            */
 
+             $this->_writeLog('<h4>Checking files on Permanent Storage.</h4>');
 
-         $this->_writeLog('<h4>Checking files on Permanent Storage.</h4>');
+             $result1 = $this->_doesFileExistsOnPermStorage($data['fid1_1_amd_fileOriginalPath'], $itemId, 'm', 's');
+             $result2 = $this->_doesFileExistsOnPermStorage($data['fid1_2_amd_fileOriginalPath'], $itemId, 'c', 's');
+             $result3 = $this->_doesFileExistsOnPermStorage($data['fid1_3_amd_fileOriginalPath'], $itemId, 'o', 's');
 
-         $result1 = $this->_doesFileExistsOnPermStorage($data['fid1_1_amd_fileOriginalPath'], $itemId, 'm', 's');
-         $result2 = $this->_doesFileExistsOnPermStorage($data['fid1_2_amd_fileOriginalPath'], $itemId, 'c', 's');
-         $result3 = $this->_doesFileExistsOnPermStorage($data['fid1_3_amd_fileOriginalPath'], $itemId, 'o', 's');
+             $doFilesExistInPermStorage = $result1 && $result2 && $result3;
+        } else {
+            $itemTextRowFound = false;
+        }
 
-         $doFilesExistInPermStorage = $result1 && $result2 && $result3;
-
-         $reason = '';
-
-         if ($isMigrated) {
-             $reason = 'Already Migrated';
+        if (!$itemTextRowFound) {
+             $reason = self::REASON_ITEMTEXT_ROW_NOT_FOUND;
+        } elseif ($isMigrated) {
+             $reason = self::REASON_ALREADY_MIGRATED;
          } elseif (!$isStatusActive) {
-             $reason = 'Status Inactive';
+             $reason = self::REASON_STATUS_INACTIVE;
          } elseif (!$isClosedEqualToNo) {
-             $reason = 'Closed is Yes';
+             $reason = self::REASON_CLOSED_IS_YES;
          } elseif (!$doFilesExistInPermStorage) {
-             $reason = 'File(s) do not exist on Permanent Storage';
+             $reason = self::REASON_FILES_DO_NOT_EXIST_ON_PERM_STORAGE;
          }
-
 
          $this->_writeLog('<h3>Conclusion</h3>');
 
