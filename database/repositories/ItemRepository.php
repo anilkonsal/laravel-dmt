@@ -625,13 +625,15 @@ class ItemRepository {
             $data['rep3_amd_rights'] = '1062';
         }
 
+        $masterYear = substr($imageRow->masterRoot, -4);
+        $comasterYear = substr($imageRow->fromRoot, -4);
 
-        $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
+        $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $masterYear . "/" . $imageRow->masterFolder ."/" .  $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_amd_fileOriginalName'] = $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_amd_label'] = $itemTextRow->ab;
         $data['fid1_1_amd_groupID'] = $imageRow->itemKey;
 
-        $data['fid1_2_amd_fileOriginalPath'] = "/permanent_storage/legacy/comaster/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
+        $data['fid1_2_amd_fileOriginalPath'] = "/permanent_storage/legacy/comaster/". $comasterYear . "/"  . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_amd_fileOriginalName'] = $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_amd_label'] = $itemTextRow->ab;
         $data['fid1_2_amd_groupID'] = $imageRow->itemKey;
@@ -789,7 +791,7 @@ class ItemRepository {
 
                 $data['rep3_amd_rights'] = 'AR_EVERYONE';
 
-                $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->wtype;
+                $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'];
 
             } elseif ($supress == 'No') {
                 $data['rep3_amd_rights'] = 'AR_EVERYONE';
@@ -811,13 +813,12 @@ class ItemRepository {
             $data['fid1_2_amd_label'] = $itemTextRow->ab;
             $data['fid1_2_amd_groupID'] = $imageRow->itemKey;
 
-            $data['rep1_amd_url'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
-            $data['rep2_amd_url'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
+            $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'];
+            $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'];
 
             $data['rep1_1_label'] = $itemTextRow->ab;
             $data['rep2_1_label'] = $itemTextRow->ab;
             $data['rep3_1_label'] = $itemTextRow->ab;
-
 
 
             /*
@@ -852,12 +853,12 @@ class ItemRepository {
 
 
          if (!empty($reason)) {
-             $this->_writeLog('<div style="color:red">SIP not be generated for item id: '. $itemId.'</div>');
+             $this->_writeLog('<div style="background-color:red; color:#fff">SIP not be generated for item id: '. $itemId.'</div>');
              $this->_writeLog('Reason: <b>'. $reason.'</b>');
              $this->_closeLog();
              return false;
          } else {
-             $this->_writeLog('<div style="color:#15a545">SIP generated for item id: '. $itemId.'</div>');
+             $this->_writeLog('<div style="background-color:#15a545; color: #fff">SIP generated for item id: '. $itemId.'</div>');
          }
          $this->_closeLog();
 
@@ -865,15 +866,12 @@ class ItemRepository {
     }
 
 
-
-
-
     /**
      * Function to get the DC:Type Full form
      * @param  String $type The two character type
      * @return String       The full form of the type
      */
-    protected function _getDcType($type)
+    protected function _getDcType($type) : string
     {
         $type = trim($type,' ,');
 
@@ -897,10 +895,10 @@ class ItemRepository {
      * @param  String $datetime The datetime field
      * @return String           The date part
      */
-    protected function _getDatePart($datetime)
+    protected function _getDatePart($datetime) : string
     {
         if(empty($datetime)) {
-            return;
+            return '';
         }
         list($date, $time) = explode(' ', $datetime);
         return $date;
@@ -911,14 +909,14 @@ class ItemRepository {
      * @param  String $string The input string from which URL has to be extracted
      * @return String  Either the extracted URL or the input string itself
      */
-    protected function _getUrlPart($string)
+    protected function _getUrlPart($string) : string
     {
         $regex = '/http?:\/\/[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/))/';
         preg_match($regex, $string, $matches);
         if (count($matches)) {
             return  $matches[0];
         }
-        return $string;
+        return $string ? : '';
     }
 
     /**
@@ -927,7 +925,7 @@ class ItemRepository {
      * @param  string $filePath Path of file to be searched
      * @return  boolean     True if it is found, False otherwise
      */
-    protected function _doesFileExistsOnPermStorage($filePath, $itemId, $representation, $albumStandalone)
+    protected function _doesFileExistsOnPermStorage($filePath, $itemId, $representation, $albumStandalone) : bool
     {
         $count = \DB::table('rosetta_permanent_storage_legacy')
                     ->where('file_path', $filePath)
@@ -960,10 +958,9 @@ class ItemRepository {
      * @param  EloquentRowObject  $imageItemRow The image row
      * @return boolean
      */
-    protected function _isMigrated($imageItemRow)
+    protected function _isMigrated($imageItemRow) : bool
     {
-
-        $year = str_replace('_MASTER\\','', $imageItemRow->masterRoot);
+        $year = substr($imageItemRow->masterRoot ,-4);
 
         $yfk = '/' . $year .'/'. $imageItemRow->masterFolder . '/' . $imageItemRow->masterKey;
 
@@ -972,13 +969,11 @@ class ItemRepository {
         $highresPath = '/permanent_storage/legacy/derivatives/highres/image/'. $imageItemRow->wpath . '/'. $imageItemRow->masterKey . 'h.jpg';
         $stdresPath = '/permanent_storage/legacy/derivatives/screenres/image/'. $imageItemRow->wpath . '/'. $imageItemRow->masterKey . 'r.jpg';
 
-
         $this->_writeLog('<h4>Entered isMigrated Function</h4>');
         $this->_writeLog('Master Path: '.$masterPath);
         $this->_writeLog('Co Master Path: '.$comasterPath);
         $this->_writeLog('Hires Path: '.$highresPath);
         $this->_writeLog('Stdres Path: '.$stdresPath);
-
 
         $masterCount = \DB::table('rosetta_migrated')
                             ->where('file_path', $masterPath)
@@ -1016,7 +1011,7 @@ class ItemRepository {
      * @param  EloquentRowObject  $imageItemRow
      * @return boolean
      */
-    protected function _isStatusActive($acmsItemRow, $imageItemRow)
+    protected function _isStatusActive($acmsItemRow, $imageItemRow) : bool
     {
 
         $this->_writeLog('<h4>Entered isStatusActive Function</h4>');

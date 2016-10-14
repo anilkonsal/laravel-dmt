@@ -392,7 +392,7 @@
   </mets:fileSec>
 
   <mets:structMap ID="rep1-1" TYPE="PHYSICAL">
-    <mets:div LABEL="COMASTER">
+    <mets:div LABEL="PRESERVATION MASTER">
       <mets:div LABEL="Table of Contents">
         <mets:div LABEL="{{ $rep1_1_label }}" TYPE="FILE">
           <mets:fptr FILEID="fid1-1"/>
@@ -402,7 +402,7 @@
   </mets:structMap>
 
   <mets:structMap ID="rep2-1" TYPE="PHYSICAL">
-    <mets:div LABEL="SCREEN">
+    <mets:div LABEL="COMASTER">
       <mets:div LABEL="Table of Contents">
         <mets:div LABEL="{{ $rep2_1_label }}" TYPE="FILE">
           <mets:fptr FILEID="fid1-2"/>
