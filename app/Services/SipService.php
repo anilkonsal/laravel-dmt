@@ -125,6 +125,7 @@ class SipService {
                 }
             }
         }
+        dd($folders);
 
         if (count($folders) > 0) {
             return $this->_generateZip($itemId, $folders);
@@ -177,6 +178,12 @@ class SipService {
         return $dcIdentifierFolder;
     }
 
+    /**
+     * Function to generate the Zip file
+     * @param  Integer $itemId
+     * @param  Array  $folders Folders to be zipped
+     * @return string Zip file URL
+     */
     protected function _generateZip($itemId, Array $folders) : string
     {
         $zip = new \ZipArchive();

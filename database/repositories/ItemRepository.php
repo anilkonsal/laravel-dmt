@@ -184,119 +184,6 @@ class ItemRepository {
     }
 
 
-    public function getDetails_old($itemID, $debug = false, &$itemizedCounts=[])
-    {
-        $counts = [
-            'masterCount'       =>  0,
-            'comasterCount'     =>  0,
-            'hiresCount'        =>  0,
-            'stdresCount'       =>  0,
-            'previewCount'      =>  0,
-            'thumbnailCount'    =>  0,
-
-            'albumsCount'       =>  0,
-            'albumMasterCount'   =>  0,
-            'albumComasterCount' =>  0,
-            'albumHiresCount'    =>  0,
-            'albumStdresCount'   =>  0,
-            'albumPreviewCount'  =>  0,
-            'albumThumbnailCount'=>  0,
-        ];
-        $albumsCount = 0;
-        // Fetch the item row
-        $itemRow = \DB::table('item')
-                    ->where('itemID',$itemID)
-                    ->first();
-
-        if (!$itemRow) {
-            throw new \InvalidArgumentException( 'Row not found for this itemID');
-        }
-
-        // get the digital id
-        $digitalId = $itemRow->masterKey;
-
-
-        if ($digitalId != 'NULL') {
-
-            // search for albums of this digital id
-            $albumRow = \DB::table('item')
-                        ->where('masterKey', $digitalId)
-                        ->where('assetType', 'image')
-                        ->where('itemType', 'album')
-                        ->first();
-
-
-            // if no row found
-            if (!$albumRow) {
-                $masterCount = $this->_getRepCountByDigitalID($digitalId, self::REP_MASTER);
-                $comasterCount = $this->_getRepCountByDigitalID($digitalId, self::REP_COMASTER);
-                $previewCount = $this->_getRepCountByDigitalID($digitalId, self::REP_PREVIEW);
-                $hiresCount = $this->_getRepCountByDigitalID($digitalId, self::REP_HIRES);
-                $stdresCount = $this->_getRepCountByDigitalID($digitalId, self::REP_STDRES);
-                $thumbnailCount = $this->_getRepCountByDigitalID($digitalId, self::REP_THUMBNAIL);
-
-            } else {
-                $albumID = $albumRow->itemID;
-
-                $albumsCount++;
-                $albumMasterCount = $this->_getRepCountByCollectionID($albumID, self::REP_MASTER);
-                $albumComasterCount = $this->_getRepCountByCollectionID($albumID, self::REP_COMASTER);
-                $albumPreviewCount = $this->_getRepCountByCollectionID($albumID, self::REP_PREVIEW);
-                $albumHiresCount = $this->_getRepCountByCollectionID($albumID, self::REP_HIRES);
-                $albumStdresCount = $this->_getRepCountByCollectionID($albumID, self::REP_STDRES);
-                $albumThumbnailCount = $this->_getRepCountByCollectionID($albumID, self::REP_THUMBNAIL);
-
-            }
-
-            $counts = [
-                'masterCount'       =>  isset($masterCount) ? $masterCount : 0,
-                'comasterCount'     =>  isset($comasterCount) ? $comasterCount : 0,
-                'hiresCount'        =>  isset($hiresCount) ? $hiresCount : 0,
-                'stdresCount'       =>  isset($stdresCount) ? $stdresCount : 0,
-                'previewCount'      =>  isset($previewCount) ? $previewCount : 0,
-                'thumbnailCount'    =>  isset($thumbnailCount) ? $thumbnailCount : 0,
-
-                'albumsCount'        =>  isset($albumsCount) ? $albumsCount : 0,
-                'albumMasterCount'   =>  isset($albumMasterCount) ? $albumMasterCount : 0,
-                'albumComasterCount' =>  isset($albumComasterCount) ? $albumComasterCount : 0,
-                'albumHiresCount'    =>  isset($albumHiresCount) ? $albumHiresCount : 0,
-                'albumStdresCount'   =>  isset($albumStdresCount) ? $albumStdresCount : 0,
-                'albumPreviewCount'  =>  isset($albumPreviewCount) ? $albumPreviewCount : 0,
-                'albumThumbnailCount'=>  isset($albumThumbnailCount) ? $albumThumbnailCount : 0,
-            ];
-
-        }
-
-
-            $itemizedCounts[$itemID] = [
-                'albumsCount' => $counts['albumsCount'],
-                'albumImagesCount' => $counts['albumPreviewCount'],
-                'standaloneImagesCount'   => $counts['masterCount']
-            ];
-
-
-            $children = \DB::table('collection')
-                            ->where('collectionID', $itemID)
-                            ->get();
-
-
-            foreach ($children as $child) {
-
-                $itemID = $child->itemID;
-
-                $nCounts = $this->getDetails($itemID, $debug, $itemizedCounts);
-                $mCounts = $nCounts['counts'];
-
-                $counts = $this->_array_sum_by_key($counts, $mCounts);
-
-
-        }
-
-        return ['counts' => $counts, 'itemizedCounts' => $itemizedCounts];
-
-    }
-
-
     public function getDetails($itemID, $debug = false, &$itemizedCounts=[])
     {
         $counts = [
@@ -337,11 +224,11 @@ class ItemRepository {
             $alId = $itemTextRow->album_id;
 
             if ($alId) {
-            $albumRow = \DB::table('item')
+                $albumRow = \DB::table('item')
                         ->where('itemID',$alId)
                         ->first();
 
-                    }
+            }
         }
 
 
@@ -761,8 +648,9 @@ class ItemRepository {
             $data['fid1_2_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_2_dmd_isFormatOf']);
 
             $data['fid1_3_dmd_title'] = $itemTextRow->ab;
-            $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
-            $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
+            // $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
+            $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
+            $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
             $data['fid1_3_dmd_identifier'] = $itemId;
             $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
             $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
@@ -777,8 +665,9 @@ class ItemRepository {
 
             if ($supress  == 'Image') {
                 $data['fid1_3_dmd_title'] = $itemTextRow->ab;
-                $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
-                $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+                // $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+                $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+                $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->wroot .'/'. $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
                 $data['fid1_3_dmd_identifier'] = $itemId;
                 $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah);
                 $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
