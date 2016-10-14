@@ -127,7 +127,7 @@ class SipService {
         }
 
         if (count($folders) > 0) {
-            return $this->_generateFolders($folders);
+            return $this->_generateZip($itemId, $folders);
         }
 
         return false;
@@ -136,7 +136,6 @@ class SipService {
     {
         $itemizedCounts = $this->_itemRepository->getDetails($itemId)['itemizedCounts'];
         $folders = [];
-
 
         if (file_exists($logFile)) {
             unlink($logFile);
@@ -151,17 +150,35 @@ class SipService {
             }
         }
 
-        //dd($folders);
         if (count($folders) > 0) {
-            return $this->_generateFolders($folders);
+            return $this->_generateZip($itemId, $folders);
         }
 
         return false;
     }
 
-    protected function _generateZip(Array $folders)
+    /**
+     * Function to generate the required folder structure for the Sips
+     * @param  integer $itemId
+     * @return array Paths of the Main folder;
+     */
+    protected function _generateFolders($itemId) : string
     {
+        $sipFolder = public_path().'/downloads/sips';
 
+        $dcIdentifierFolder = $sipFolder.'/dc_identifier_'.$itemId;
+        $contentFolder = $dcIdentifierFolder.'/content';
+        $streamFolder = $contentFolder.'/streams';
+
+        @mkdir($dcIdentifierFolder, 0775, true);
+        @mkdir($contentFolder, 0775, true);
+        @mkdir($streamFolder, 0775, true);
+
+        return $dcIdentifierFolder;
+    }
+
+    protected function _generateZip($itemId, Array $folders) : string
+    {
         $zip = new \ZipArchive();
         $zipRelativePath = '/downloads/sips/sips-'.$itemId.'-'.date('YmdHis').'.zip';
 
@@ -179,45 +196,19 @@ class SipService {
             foreach ($files as $file)
             {
                $file = str_replace('\\', '/', $file);
-
                if( in_array(substr($file, strrpos($file, '/')+1), array('.', '..')) )
                    continue;
 
                $file = realpath($file);
-
-               if (is_dir($file) === true)
-               {
+               if (is_dir($file) === true) {
                    $zip->addEmptyDir($baseSource.'/'.str_replace($source . '/', '', $file .'/'));
-               }
-               else if (is_file($file) === true)
-               {
+               } else if (is_file($file) === true) {
                   $zip->addFromString($baseSource.'/'.str_replace($source . '/', '', $file), file_get_contents($file));
                }
            }
-
         }
         $zip->close();
         return $zipFileUrl;
-
     }
 
-    /**
-     * Function to generate the required folder structure for the Sips
-     * @param  integer $itemId
-     * @return array Paths of the Main folder;
-     */
-    protected function _generateFolders($itemId)
-    {
-        $sipFolder = public_path().'/downloads/sips';
-
-        $dcIdentifierFolder = $sipFolder.'/dc_identifier_'.$itemId;
-        $contentFolder = $dcIdentifierFolder.'/content';
-        $streamFolder = $contentFolder.'/streams';
-
-        @mkdir($dcIdentifierFolder, 0775, true);
-        @mkdir($contentFolder, 0775, true);
-        @mkdir($streamFolder, 0775, true);
-
-        return $dcIdentifierFolder;
-    }
 }

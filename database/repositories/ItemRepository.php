@@ -660,6 +660,7 @@ class ItemRepository {
     {
         $data = [];
         $reason = NULL;
+        $doFilesExistInPermStorage = true;
 
         $this->_log = $logFile;
 
@@ -797,12 +798,15 @@ class ItemRepository {
             }
 
 
-            $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
+            $masterYear = substr($imageRow->masterRoot, -4);
+            $comasterYear = substr($imageRow->fromRoot, -4);
+
+            $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $masterYear . "/" . $imageRow->masterFolder ."/" .  $imageRow->masterKey . "u." . $imageRow->fromType;
             $data['fid1_1_amd_fileOriginalName'] = $imageRow->masterKey . "u." . $imageRow->fromType;
             $data['fid1_1_amd_label'] = $itemTextRow->ab;
             $data['fid1_1_amd_groupID'] = $imageRow->itemKey;
 
-            $data['fid1_2_amd_fileOriginalPath'] = "/permanent_storage/legacy/comaster/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
+            $data['fid1_2_amd_fileOriginalPath'] = "/permanent_storage/legacy/comaster/". $comasterYear . "/"  . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
             $data['fid1_2_amd_fileOriginalName'] = $imageRow->fromKey . "." . $imageRow->fromType;
             $data['fid1_2_amd_label'] = $itemTextRow->ab;
             $data['fid1_2_amd_groupID'] = $imageRow->itemKey;
