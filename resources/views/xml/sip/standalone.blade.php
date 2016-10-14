@@ -21,7 +21,7 @@
   <mets:dmdSec ID="fid1-1-dmd">
     <mets:mdWrap MDTYPE="DC">
       <mets:xmlData>
-        <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3">
           <dc:title>{{ $fid1_1_dmd_title }}</dc:title>
           <dc:source>{{ $fid1_1_dmd_source }}</dc:source>
           <dc:description>{{ $fid1_1_dmd_description }}</dc:description>
@@ -37,7 +37,7 @@
   <mets:dmdSec ID="fid1-2-dmd">
     <mets:mdWrap MDTYPE="DC">
       <mets:xmlData>
-        <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3">
           <dc:title>{{ $fid1_2_dmd_title }}</dc:title>
           <dc:source>{{ $fid1_2_dmd_source }}</dc:source>
           <dc:description>{{ $fid1_2_dmd_description }}</dc:description>
@@ -53,7 +53,7 @@
   <mets:dmdSec ID="fid1-3-dmd">
     <mets:mdWrap MDTYPE="DC">
       <mets:xmlData>
-        <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3">
           <dc:title>{{ $fid1_3_dmd_title }}</dc:title>
           <dc:source>{{ $fid1_3_dmd_source }}</dc:source>
           <dc:description>{{ $fid1_3_dmd_description }}</dc:description>
