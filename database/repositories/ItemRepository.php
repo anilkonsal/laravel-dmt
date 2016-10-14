@@ -618,6 +618,7 @@ class ItemRepository {
 
             $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
             $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
+            $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
 
             $itemTextRow->al = $this->_getDcType($itemTextRow->al);
 
