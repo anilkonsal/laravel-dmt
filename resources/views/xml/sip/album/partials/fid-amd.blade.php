@@ -1,5 +1,5 @@
-<mets:amdSec ID="fidx-y-amd">
-    <mets:techMD ID="fidx-y-amd-tech">
+<mets:amdSec ID="{{ $fidx_y }}-amd">
+    <mets:techMD ID="{{ $fidx_y }}-amd-tech">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
@@ -19,21 +19,21 @@
         </mets:xmlData>
       </mets:mdWrap>
     </mets:techMD>
-    <mets:rightsMD ID="fidx-y-amd-rights">
+    <mets:rightsMD ID="{{ $fidx_y }}-amd-rights">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:rightsMD>
-    <mets:sourceMD ID="fidx-y-amd-source">
+    <mets:sourceMD ID="{{ $fidx_y }}-amd-source">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:sourceMD>
-    <mets:digiprovMD ID="fidx-y-amd-digiprov">
+    <mets:digiprovMD ID="{{ $fidx_y }}-amd-digiprov">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>

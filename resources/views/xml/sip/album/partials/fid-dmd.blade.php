@@ -1,4 +1,4 @@
-<mets:dmdSec ID="{{ $fidx-y-dmd }}">
+<mets:dmdSec ID="{{ $fidx_y }}-dmd">
   <mets:mdWrap MDTYPE="DC">
     <mets:xmlData>
       <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

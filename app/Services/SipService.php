@@ -102,13 +102,114 @@ class SipService {
 
         $xml = $this->_generateXMLForAlbumSip($data);
 
+        // dd($xml);
         file_put_contents($mainFolder.'/content/ie.xml', $xml);
         return $mainFolder;
     }
 
     protected function _generateXMLForAlbumSip($data)
     {
-        return '';
+        // dd($data);
+        $itemData = $data[array_keys($data)[0]];
+
+        $ieDmdXML = view('xml.sip.album.partials.ie-dmd', [
+            'ie_dmd_identifier'     => $itemData['ie_dmd_identifier'],
+            'ie_dmd_title'          => $itemData['ie_dmd_title'],
+            'ie_dmd_creator'        => $itemData['ie_dmd_creator'],
+            'ie_dmd_source'         => $itemData['ie_dmd_source'],
+            'ie_dmd_type'           => $itemData['ie_dmd_type'],
+            'ie_dmd_accessRights'   => $itemData['ie_dmd_accessRights'],
+            'ie_dmd_date'           => $itemData['ie_dmd_date'],
+            'ie_dmd_isFormatOf'     => $itemData['ie_dmd_isFormatOf'],
+        ])->render();
+
+        $fidDmdXml = '';
+        $fidAmdXml = '';
+
+        $fileSecAmdXml = '';
+        $structMapRepXml = '';
+
+        for($y=1; $y<=3; $y++) {
+
+            $x=1;
+            $fileSecChildAmdXml = '';
+            $structMapRepChildXml = '';
+
+            foreach ($data as $item) {
+
+                $prefix1 = "fid".$x."-".$y;
+                $prefix2 = "fid1_".$y;
+
+                $fidx_y = 'fid'.$x.'-'.$y;
+
+                $fidDmdXml .= view('xml.sip.album.partials.fid-dmd', [
+                    "fidx_y"                    =>  $fidx_y,
+                    'fidx_y_dmd_title'          =>  $item[$prefix2.'_dmd_title'],
+                    'fidx_y_dmd_source'         =>  $item[$prefix2.'_dmd_source'],
+                    'fidx_y_dmd_description'    =>  $item[$prefix2.'_dmd_description'],
+                    'fidx_y_dmd_identifier'     =>  $item[$prefix2.'_dmd_identifier'],
+                    'fidx_y_dmd_date'           =>  $item[$prefix2.'_dmd_date'],
+                    'fidx_y_dmd_tableOfContents'=>  $item[$prefix2.'_dmd_tableOfContents'],
+                    'fidx_y_dmd_isFormatOf'     =>  $item[$prefix2.'_dmd_isFormatOf'],
+                ])->render();
+
+                $fidAmdXml .= view('xml.sip.album.partials.fid-amd', [
+                    "fidx_y"                        =>  $fidx_y,
+                    'fidx_y_amd_fileOriginalPath'   =>  $item[$prefix2.'_amd_fileOriginalPath'],
+                    'fidx_y_amd_fileOriginalName'   =>  $item[$prefix2.'_amd_fileOriginalName'],
+                    'fidx_y_amd_label'              =>  $item[$prefix2.'_amd_label'],
+                    'fidx_y_amd_groupID'            =>  $item[$prefix2.'_amd_groupID'],
+                ])->render();
+
+                $fileSecChildAmdXml .= view('xml.sip.album.partials.filesec-rep-child-amd', [
+                    "fidx_y"                        =>  $fidx_y,
+                    'fidx_y_amd_fileOriginalPath'   =>  $item[$prefix2.'_amd_fileOriginalPath']
+                ])->render();
+
+                $structMapRepChildXml .= view('xml.sip.album.partials.structmap-rep-child', [
+                    "fidx_y"            =>  $fidx_y,
+                    'repx_y_label'      =>  $item[$prefix2.'_amd_label']
+                ])->render();
+
+                $x++;
+            }
+
+            $fileSecAmdXml .= view('xml.sip.album.partials.filesec-rep-amd', [
+                "repx"                        =>  'rep'.$y,
+                'filesec_rep_child_amd'       =>  $fileSecChildAmdXml
+            ])->render();
+
+            $structMapRepXml .= view('xml.sip.album.partials.structmap-rep', [
+                "repx_y"            =>  'rep'.$y.'-1',
+                'rep_label'    =>       $this->_getRepLabel($y),
+                'structmap_rep_child'      =>  $structMapRepChildXml
+            ])->render();
+
+        }
+
+        $fileSecXml = view('xml.sip.album.partials.filesec-rep-wrapper', [
+            'filesec_rep_amd'       =>  $fileSecAmdXml
+        ])->render();
+
+        $ieAmdXml = view('xml.sip.album.partials.ie-amd')->render();
+
+        $repAmdXml = view('xml.sip.album.partials.rep-amd')->render();
+
+        $xml = view('xml.sip.album.album', [
+            'xml'   =>  $ieDmdXML . $fidDmdXml . $ieAmdXml . $repAmdXml . $fidAmdXml . $fileSecXml . $structMapRepXml
+        ])->render();
+
+        return $xml  ;
+    }
+
+    protected function _getRepLabel($i) {
+        if ($i == 1) {
+            return 'PRESERVATION MASTER';
+        } elseif ($i == 2) {
+            return 'COMASTER';
+        } elseif ($i ==3) {
+            return 'SCREEN';
+        }
     }
 
 
@@ -125,7 +226,7 @@ class SipService {
                 }
             }
         }
-        dd($folders);
+        // dd($folders);
 
         if (count($folders) > 0) {
             return $this->_generateZip($itemId, $folders);
