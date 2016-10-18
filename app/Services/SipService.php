@@ -88,12 +88,13 @@ class SipService {
 
     /**
      *
-     * Function to generate the
-     * @param  [type] $itemId [description]
-     * @return [type]         [description]
+     * Function to generate the sip for an individual album and its images
+     * @param  integer $itemId ACMS item id for the album
+     * @return mixed   Folder where the xml file was generated and placed
+     *                 False otherwise
      */
-    public function generateAlbumItemSip($itemId) {
-        $data = $this->_itemRepository->getSipDataForAlbum($itemId);
+    public function generateAlbumItemSip($itemId, $logFile) {
+        $data = $this->_itemRepository->getSipDataForAlbum($itemId, $logFile);
 
         if ($data === false) {
             return false;
@@ -202,25 +203,25 @@ class SipService {
         return $xml  ;
     }
 
-    protected function _getRepLabel($i) {
-        if ($i == 1) {
-            return 'PRESERVATION MASTER';
-        } elseif ($i == 2) {
-            return 'COMASTER';
-        } elseif ($i ==3) {
-            return 'SCREEN';
-        }
-    }
 
 
-    public function generateAlbumSip($itemId)
+    /**
+     * Function to generate the SIP for all albums belonging to an item id
+     * @param  Integer $itemId ACMS item id
+     * @return mixed    Zip file path on success otherwise False
+     */
+    public function generateAlbumSip($itemId, $logFile)
     {
         $itemizedCounts = $this->_itemRepository->getDetails($itemId)['itemizedCounts'];
         $folders = [];
 
+        if(file_exists($logFile)) {
+            unlink($logFile);
+        }
+
         foreach ($itemizedCounts as $childItemId => $counts) {
             if ($counts['albumsCount'] > 0) {
-                $result = $this->generateAlbumItemSip($childItemId);
+                $result = $this->generateAlbumItemSip($childItemId, $logFile);
                 if ($result !== false) {
                     $folders[] = $result;
                 }
@@ -317,6 +318,22 @@ class SipService {
         }
         $zip->close();
         return $zipFileUrl;
+    }
+
+    /**
+     * Function to get the Label of Representation based on the Rep number
+     * @param  integer $i the Representation number
+     * @return string    [description]
+     */
+    protected function _getRepLabel($i) : string
+    {
+        if ($i == 1) {
+            return 'PRESERVATION MASTER';
+        } elseif ($i == 2) {
+            return 'COMASTER';
+        } elseif ($i ==3) {
+            return 'SCREEN';
+        }
     }
 
 }

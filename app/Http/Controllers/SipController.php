@@ -62,16 +62,18 @@ class SipController extends Controller
                 throw new \InvalidArgumentException( 'Please provide the item ID', '400');
             }
 
-            // $allCounts = $itemService->getDetails($itemID, $debug);
-            // $counts = $allCounts['counts'];
-            // $itemizedCounts = $allCounts['itemizedCounts'];
 
 
-            $zipPath = $sipService->generateAlbumSip($itemId);
+            $logFile = public_path().'/downloads/sips/log-'.$itemId.'.html';
+            $logFileUrl = '/downloads/sips/log-'.$itemId.'.html';
+            $zipPath = $sipService->generateAlbumSip($itemId, $logFile);
 
-            if ($zipPath !== false) {
-                return view('sip.album', ['item_id' => $itemId, 'albumZipPath'  =>  $zipPath, 'debug' => false]);
-            }
+            return view('sip.album', [
+                'itemId' => $itemId,
+                'albumZipPath'  =>  $zipPath,
+                'debug' => false,
+                'logFile'   =>  $logFileUrl
+            ]);
 
 
         }

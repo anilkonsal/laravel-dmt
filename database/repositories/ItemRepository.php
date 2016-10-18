@@ -381,11 +381,16 @@ class ItemRepository {
     /**
      * Function to generate the SIP data for an individual Album
      * @param  integer $itemId ACMS item id for the album
-     * @return array  Array of data of all the images belonging to this album
+     * @param  string $logFile Path of the log file to be written
+     * @return mixed  Array of data of all the images belonging to this album or False
      */
-    public function getSipDataForAlbum($itemId) : array
+    public function getSipDataForAlbum($itemId, $logFile)
     {
         $data = [];
+        $isMigrated = false;
+
+        $this->_log = $logFile;
+
 
         $albumAcmsRow = \DB::table('item')
                     ->where('itemID', $itemId)->first();
@@ -395,6 +400,9 @@ class ItemRepository {
                         ->where('itemID', $itemId)->first();
 
         $albumId = $itemTextRow->album_id;
+
+        $albumRow = \DB::table('item')
+                        ->where('itemID', $albumId)->first();
 
         $albumItemTextRow = \DB::table('itemtext')
                         ->where('itemID', $albumId)->first();
@@ -426,13 +434,73 @@ class ItemRepository {
                                 ->where('collectionID', $albumId)
                                 ->get()->keyBy('itemID');
 
+        $this->_writeLog('<h2><u>Started with Album with ACMS item Id: '. $itemId.'</u></h2>');
+        $this->_writeLog('Album Id: '. $albumId);
+        $this->_writeLog('Number of images: '. count($imageRows));
+        $this->_writeLog('Image ids: '. implode(', ', array_keys($imageRows->all())));
 
+
+
+        /*
+        Check if Album Row exists, if not, them return false
+         */
+        if (!$albumRow) {
+            $this->_writeLog('Album row does not exist!');
+            return false;
+        }
+
+
+
+        /*
+        If there are no images in this album, then return false
+         */
+        if(count($imageRows) < 1) {
+            $this->_writeLog('No images in album');
+            return false;
+        }
+
+        /*
+        Check if closed == no for acms row and album row, if not, then return false
+         */
+        if ($albumAcmsRow->closed != 'No' || $albumRow->closed != 'No') {
+            $this->_writeLog('ACMS Row closed = '. $albumAcmsRow->closed);
+            $this->_writeLog('Album Row closed = '. $albumRow->closed);
+            return false;
+        }
 
         /*
         Loop through all the images belonging to this album and get the data back
          */
         foreach ($imageRows as $itemId => $imageRow) {
+            $this->_writeLog('<h3>Staring with Image Row with Id: '.$itemId.'</h3>');
+            /*
+            Check if the item has already been migrated, if yes, then skip this item
+             */
+            $isMigrated[$itemId] = $this->_isMigrated($imageRow);
+            if($isMigrated[$itemId]) {
+                $this->_writeLog('<h3>Image already migrated, so skipping this Album</h3>');
+                return false;
+            }
+
+            /*
+            Check if the images are active, if yes, then generate data for this album
+            otherwise, skip this image in the xml
+             */
+            if ($imageRow->status != 'active') {
+                $this->_writeLog('Image status is not ACTIVE');
+                continue;
+            }
+
+
+            /*
+            Check if the images are not closed, if yes, then skip the closed images
+             */
+            if ($imageRow->closed != 'No') {
+                $this->_writeLog('Image closed not equal to NO');
+                continue;
+            }
             $data[$itemId] = $this->_getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRows[$itemId], $collectionRows[$itemId]);
+
         }
 
         // dd($data);
@@ -584,7 +652,23 @@ class ItemRepository {
         $data['rep2_1_label'] = $itemTextRow->ab;
         $data['rep3_1_label'] = $itemTextRow->ab;
 
-        // $this->_writeAndFlushLog('Finished generating data', $itemId);
+        /*
+        Check on the Permanent storage if all the three files exist, if any one file does
+        not exist, then return false (which leads to this image being skipped for sip generation)
+        */
+
+         $this->_writeLog('<h4>Checking files on Permanent Storage.</h4>');
+
+         $result1 = $this->_doesFileExistsOnPermStorage($data['fid1_1_amd_fileOriginalPath'], $itemId, 'm', 'a');
+         $result2 = $this->_doesFileExistsOnPermStorage($data['fid1_2_amd_fileOriginalPath'], $itemId, 'c', 'a');
+         $result3 = $this->_doesFileExistsOnPermStorage($data['fid1_3_amd_fileOriginalPath'], $itemId, 'o', 'a');
+
+         $doFilesExistInPermStorage = $result1 && $result2 && $result3;
+
+         if(!$doFilesExistInPermStorage) {
+             return false;
+         }
+
 
         return $data;
     }
