@@ -30,7 +30,7 @@
                                 <br/>
 
                                 <button type="submit" class="btn btn-primary">
-                                    Fetch Report
+                                    Generate Now
                                 </button>
 
                             </div>

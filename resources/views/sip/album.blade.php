@@ -30,7 +30,7 @@
                                 <br/>
 
                                 <button type="submit" class="btn btn-primary">
-                                    Fetch Report
+                                    Generate Now
                                 </button>
 
                             </div>
@@ -42,12 +42,12 @@
         </div>
     </div>
 
-    @if(isset($standAloneZipPath))
+    @if(!empty($albumZipPath))
     <div class="row">
         <div class="col-md-6 col-lg-6">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3>Detail Report for images of Item ID: {{ $item_id }}</h3>
+                    <h3>Log of processing of Item ID: {{ $itemId }}</h3>
                 </div>
                 <div class="panel-body">
                     <div class="row">
@@ -87,6 +87,24 @@
         </div>
         @endif
     </div>
+    @endif
+    @if(isset($logFile))
+    <div class="row">
+        <div class="col-md-6 col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Log for Item ID: {{ $itemId }}</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6">
+                            <a href="{{ $logFile}}" target="_blank" ><i class="fa fa-eye" aria-hidden="true"></i> View Log</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </diV>
     @endif
 </div>
 @endsection
