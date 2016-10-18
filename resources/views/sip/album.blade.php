@@ -47,7 +47,7 @@
         <div class="col-md-6 col-lg-6">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3>Log of processing of Item ID: {{ $itemId }}</h3>
+                    <h3>Zip file for Item ID: {{ $itemId }}</h3>
                 </div>
                 <div class="panel-body">
                     <div class="row">
