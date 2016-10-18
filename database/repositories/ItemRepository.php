@@ -543,6 +543,7 @@ class ItemRepository {
         $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
         $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
         $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
+        $imageRow->lroot = str_replace('\\', '/', $imageRow->lroot);
 
         // dd($itemTextRow);
 
@@ -605,19 +606,21 @@ class ItemRepository {
 
         $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
 
+        // dd($imageRow);
+
         if ($supress  == 'Image') {
             $data['fid1_3_dmd_title'] = $itemTextRow->ab;
             // $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
-            $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
-            $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->wroot .'/'. $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+            $data['fid1_3_dmd_source'] = $imageRow->lroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+            $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->lroot .'/'. $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
             $data['fid1_3_dmd_identifier'] = $itemId;
             $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah, $itemTextRow->ah);
             $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
             $data['fid1_3_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_3_dmd_isFormatOf']);
             $data['fid1_3_dmd_tableOfContents'] = $collectionRow->itemIndex;
 
-            $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->wtype;
-            $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "r." . $imageRow->wtype;
+            $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+            $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "r." . $imageRow->ltype;
             $data['fid1_3_amd_label'] = $itemTextRow->ab;
             $data['fid1_3_amd_groupID'] = $imageRow->itemKey;
 
@@ -755,6 +758,7 @@ class ItemRepository {
             $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
             $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
             $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
+            $imageRow->lroot = str_replace('\\', '/', $imageRow->lroot);
 
             $itemTextRow->al = $this->_getDcType($itemTextRow->al);
 
@@ -803,15 +807,15 @@ class ItemRepository {
             if ($supress  == 'Image') {
                 $data['fid1_3_dmd_title'] = $itemTextRow->ab;
                 // $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
-                $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
-                $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->wroot .'/'. $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+                $data['fid1_3_dmd_source'] = $imageRow->lroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+                $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->lroot .'/'. $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
                 $data['fid1_3_dmd_identifier'] = $itemId;
                 $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah, $itemTextRow->ah);
                 $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
                 $data['fid1_3_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_3_dmd_isFormatOf']);
 
-                $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->wtype;
-                $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "r." . $imageRow->wtype;
+                $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
+                $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "r." . $imageRow->ltype;
                 $data['fid1_3_amd_label'] = $itemTextRow->ab;
                 $data['fid1_3_amd_groupID'] = $imageRow->itemKey;
 
