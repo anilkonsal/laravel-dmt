@@ -5,6 +5,7 @@ use Database\Repositories\ItemRepository;
 
 class ItemService {
     public $itemRepository;
+
     public function __construct(ItemRepository $itemRepository)
     {
         return $this->itemRepository = $itemRepository;

@@ -4,7 +4,9 @@
     <div class="row">
         <div class="col-md-6 col-lg-6">
             <div class="panel panel-default">
-
+                <div class="panel-heading">
+                    <h3>Generate SIPs for Standalone Images</h3>
+                </div>
                 <div class="panel-body">
                     @if ($errors->count())
                     <div class="alert alert-danger">
