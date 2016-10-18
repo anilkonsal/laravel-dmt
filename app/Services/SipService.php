@@ -108,12 +108,17 @@ class SipService {
         return $mainFolder;
     }
 
+    /**
+     * Function to generate the XML for Album SIP
+     * @param  array $data Array of information
+     * @return xml   The final generated xml
+     */
     protected function _generateXMLForAlbumSip($data)
     {
-        // dd($data);
+
         $itemData = $data[array_keys($data)[0]];
 
-        $ieDmdXML = view('xml.sip.album.partials.ie-dmd', [
+        $ieDmdXml = view('xml.sip.album.partials.ie-dmd', [
             'ie_dmd_identifier'     => $itemData['ie_dmd_identifier'],
             'ie_dmd_title'          => $itemData['ie_dmd_title'],
             'ie_dmd_creator'        => $itemData['ie_dmd_creator'],
@@ -197,7 +202,13 @@ class SipService {
         $repAmdXml = view('xml.sip.album.partials.rep-amd')->render();
 
         $xml = view('xml.sip.album.album', [
-            'xml'   =>  $ieDmdXML . $fidDmdXml . $ieAmdXml . $repAmdXml . $fidAmdXml . $fileSecXml . $structMapRepXml
+            'xml'   =>  $ieDmdXml .
+                        $fidDmdXml .
+                        $ieAmdXml .
+                        $repAmdXml .
+                        $fidAmdXml .
+                        $fileSecXml .
+                        $structMapRepXml
         ])->render();
 
         return $xml  ;
@@ -227,7 +238,6 @@ class SipService {
                 }
             }
         }
-        // dd($folders);
 
         if (count($folders) > 0) {
             return $this->_generateZip($itemId, $folders);
@@ -235,6 +245,13 @@ class SipService {
 
         return false;
     }
+
+    /**
+     * Function to generate sip f standalone images
+     * @param  integer $itemId  ACMS row id for the item
+     * @param  string $logFile Path of the log file to be generated
+     * @return mixed   Path of zip file on success or false otherwise
+     */
     public function generateSip($itemId, $logFile)
     {
         $itemizedCounts = $this->_itemRepository->getDetails($itemId)['itemizedCounts'];

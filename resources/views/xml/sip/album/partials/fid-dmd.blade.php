@@ -1,7 +1,7 @@
 <mets:dmdSec ID="{{ $fidx_y }}-dmd">
   <mets:mdWrap MDTYPE="DC">
     <mets:xmlData>
-      <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:mods="http://www.loc.gov/mods/v3">
         <dc:title>{{ $fidx_y_dmd_title }}</dc:title>
         <dc:source>{{ $fidx_y_dmd_source }}</dc:source>
         <dc:description>{{ $fidx_y_dmd_description }}</dc:description>

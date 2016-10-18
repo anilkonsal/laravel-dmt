@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -25,14 +24,9 @@ class SipController extends Controller
                 throw new \InvalidArgumentException( 'Please provide the item ID', '400');
             }
 
-            // $allCounts = $itemService->getDetails($itemID, $debug);
-            // $counts = $allCounts['counts'];
-            // $itemizedCounts = $allCounts['itemizedCounts'];
-
             $logFile = public_path().'/downloads/sips/log-'.$itemId.'.html';
             $logFileUrl = '/downloads/sips/log-'.$itemId.'.html';
             $zipPath = $sipService->generateSip($itemId, $logFile);
-
 
             return view('sip.standalone', [
                 'itemId' => $itemId,
@@ -40,13 +34,11 @@ class SipController extends Controller
                 'debug' => false,
                 'logFile'   =>  $logFileUrl
             ]);
-
-
-
         }
         return view('sip.standalone');
 
     }
+
     public function generateAlbum(Request $request, SipService $sipService)
     {
         if ($request->isMethod('post')) {
@@ -74,6 +66,5 @@ class SipController extends Controller
             ]);
         }
         return view('sip.album');
-
     }
 }

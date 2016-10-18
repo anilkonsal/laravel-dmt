@@ -91,42 +91,78 @@ class ItemRepository {
             ];
     }
 
+    /**
+     * Function to get the count of Masters
+     * @param  string $type Album or All
+     * @return integer  The count
+     */
     public function getMastersCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_MASTER);
         return $count;
     }
 
+    /**
+     * Function to get the count of Co-Masters
+     * @param  string $type Album or All
+     * @return integer  The count
+     */
     public function getComastersCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_COMASTER);
         return $count;
     }
 
+    /**
+     * Function to get the count of High Resolution
+     * @param  string $type Album or All
+     * @return integer  The count
+     */
     public function getHiresCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_HIRES);
         return $count;
     }
 
+    /**
+     * Function to get the count of Low resolution
+     * @param  string $type Album or All
+     * @return integer  The count
+     */
     public function getStdresCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_STDRES);
         return $count;
     }
 
+    /**
+     * Function to get the count of Preview
+     * @param  string $type Album or All
+     * @return integer  The count
+     */
     public function getPreviewCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_PREVIEW);
         return $count;
     }
 
+    /**
+     * Function to get the count of thumbnails
+     * @param  string $type Album or All
+     * @return integer  The count
+     */
     public function getThumbnailCount($type = self::TYPE_ALL)
     {
         $count = $this->_getCount($type, self::REP_THUMBNAIL);
         return $count;
     }
 
+    /**
+     * Function to get the count based on the type (Album/Standalone) and represenation
+     * @param  string $type  Album or all
+     * @param  string $representation
+     * @return integer   The count
+     */
     protected function _getCount($type, $representation) {
 
         if ($type == self::TYPE_ALBUM) {
@@ -155,6 +191,10 @@ class ItemRepository {
         }
     }
 
+    /**
+     * Function to get the Albums count
+     * @return integer The count
+     */
     public function getAlbumsCount()
     {
         $count = \DB::table('item')
@@ -164,6 +204,10 @@ class ItemRepository {
         return $count;
     }
 
+    /**
+     * Function to get the count of Images in albums
+     * @return integer The count
+     */
     public function getImagesInAlbumsCount()
     {
         $count = \DB::table('item')
@@ -184,6 +228,13 @@ class ItemRepository {
     }
 
 
+    /**
+     * Function to traverse the tree for a given item id and fill the different counts recursively
+     * @param  integer  $itemID  The item id
+     * @param  boolean $debug    Whether to show the itemized summary of traversal
+     * @param  array  $itemizedCounts
+     * @return array  The array of counts
+     */
     public function getDetails($itemID, $debug = false, &$itemizedCounts=[])
     {
         $counts = [
@@ -308,25 +359,40 @@ class ItemRepository {
 
     }
 
-
+    /**
+     * Function to get the count Album images migrated/not-migrated
+     * @return array  The counts
+     */
     public function getAlbumImagesNotMigratedCounts()
     {
         $counts = \DB::select('call album_images_not_migrated()');
         return $counts;
     }
 
+    /**
+     * Function to get the count Standalone images migrated/not-migrated
+     * @return array  The counts
+     */
     public function getStandaloneImagesNotMigratedCounts()
     {
         $counts = \DB::select('call standalone_images_not_migrated()');
         return $counts;
     }
 
+    /**
+     * Function to get the count ACMS Albums migrated/not-migrated
+     * @return array  The counts
+     */
     public function acmsAlbumsMigrationCounts()
     {
         $counts = \DB::select('call acms_albums_not_migrated()');
         return $counts;
     }
 
+    /**
+     * Function to get the counts of millenium albums migrated/no-migrated
+     * @return array The counts
+     */
     public function milleniumAlbumsMigrationCounts()
     {
         $counts = \DB::select('call millenium_albums_not_migrated()');
@@ -334,8 +400,13 @@ class ItemRepository {
     }
 
 
-
-    protected function _getRepCountByDigitalID($digitalId, $representation)
+    /**
+     * Function to get the Represeantion count by digital id
+     * @param  integer $digitalId      The digital id
+     * @param  string $representation The represenations
+     * @return integer The count
+     */
+    protected function _getRepCountByDigitalID($digitalId, $representation) : integer
     {
         $count = \DB::table('item')
                     ->where('masterKey', $digitalId)
@@ -347,7 +418,13 @@ class ItemRepository {
         return $count;
     }
 
-    protected function _getRepCountByCollectionID($collectionID, $representation)
+    /**
+     * Function to get the Representation count by inputting the collection id
+     * @param  integer $collectionID   Id of the collection
+     * @param  string $representation The represenation for which the count is to be found
+     * @return integer  Count
+     */
+    protected function _getRepCountByCollectionID($collectionID, $representation) : integer
     {
         $count = \DB::table('item')
                     ->whereIn('itemID', function($query) use ($collectionID) {
@@ -370,6 +447,12 @@ class ItemRepository {
         return $count;
     }
 
+    /**
+     * Function to add two arrays by keys
+     * @param  array $array1 First Array
+     * @param  array $array2 Second Array
+     * @return array Resulatant array returned after totalling
+     */
     protected function _array_sum_by_key($array1, $array2) {
         $array = [];
         foreach ($array1 as $key => $value) {
@@ -503,11 +586,7 @@ class ItemRepository {
 
         }
 
-        // dd($data);
-
         return $data;
-
-
     }
 
 /**
@@ -545,11 +624,8 @@ class ItemRepository {
         $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
         $imageRow->lroot = str_replace('\\', '/', $imageRow->lroot);
 
-        // dd($itemTextRow);
-
         $type = $this->_getDcType($itemTextRow->al);
 
-         ;
 
         if (!empty($itemTextRow->cl)) {
             $ieDmdIsFormatOf = $itemTextRow->cl;
@@ -571,7 +647,7 @@ class ItemRepository {
         $data['ie_dmd_isFormatOf'] = $ieDmdIsFormatOf;
         $data['ie_dmd_isFormatOf'] = $this->_getUrlPart($data['ie_dmd_isFormatOf']);
 
-        $data['fid1_1_dmd_title'] = $itemTextRow->ab;
+        $data['fid1_1_dmd_title'] = !empty($imageItemTextRow->ab) ? $imageItemTextRow->ab : $itemTextRow->ab;
         $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_dmd_identifier'] = $itemId;
@@ -580,7 +656,7 @@ class ItemRepository {
         $data['fid1_1_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
         $data['fid1_1_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_1_dmd_isFormatOf']);
 
-        $data['fid1_2_dmd_title'] = $itemTextRow->ab;
+        $data['fid1_2_dmd_title'] = !empty($imageItemTextRow->ab) ? $imageItemTextRow->ab : $itemTextRow->ab;
         $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_dmd_identifier'] = $itemId;
@@ -589,7 +665,7 @@ class ItemRepository {
         $data['fid1_2_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
         $data['fid1_2_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_2_dmd_isFormatOf']);
 
-        $data['fid1_3_dmd_title'] = $itemTextRow->ab;
+        $data['fid1_3_dmd_title'] = !empty($imageItemTextRow->ab) ? $imageItemTextRow->ab : $itemTextRow->ab;
         // $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
         $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
         $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
@@ -605,8 +681,6 @@ class ItemRepository {
         $data['fid1_3_amd_groupID'] = $imageRow->itemKey;
 
         $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
-
-        // dd($imageRow);
 
         if ($supress  == 'Image') {
             $data['fid1_3_dmd_title'] = $itemTextRow->ab;
@@ -634,7 +708,9 @@ class ItemRepository {
             $data['rep3_amd_rights'] = '1062';
         }
 
-
+        /*
+        Extract years from masterRoot and fromRoot fields
+         */
         $masterYear = substr($imageRow->masterRoot, -4);
         $comasterYear = substr($imageRow->fromRoot, -4);
 
@@ -829,7 +905,9 @@ class ItemRepository {
                 $data['rep3_amd_rights'] = '1062';
             }
 
-
+            /*
+            Extract years from masterYear and comasterYear fields
+             */
             $masterYear = substr($imageRow->masterRoot, -4);
             $comasterYear = substr($imageRow->fromRoot, -4);
 
@@ -1066,7 +1144,6 @@ class ItemRepository {
      */
     protected function _isClosedEqualToNo($acmsItemRow, $imageItemRow)
     {
-
         $this->_writeLog('<h4>Entered isClosedEqualToNo Function</h4>');
         $this->_writeLog('ACMS Row Closed: '.$acmsItemRow->closed);
         $this->_writeLog('Image Row Closed: '.$imageItemRow->closed);
