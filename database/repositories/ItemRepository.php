@@ -1133,19 +1133,19 @@ class ItemRepository {
              }
 
 
-            // $existing = \DB::table('missing_files_on_permanent_storage')
-            //             ->where('file_path', $filePath)
-            //             ->count();
-            //
-            // if ($existing == 0) {
-            //     \DB::table('missing_files_on_permanent_storage')
-            //         ->insert([
-            //             'item_id'           =>  $itemId,
-            //             'file_path'         =>  $filePath,
-            //             'representation'    =>  $representation,
-            //             'album_standalone'  =>  $albumStandalone
-            //         ]);
-            // }
+            $existing = \DB::table('missing_files_on_permanent_storage')
+                        ->where('file_path', $filePath)
+                        ->count();
+
+            if ($existing == 0) {
+                \DB::table('missing_files_on_permanent_storage')
+                    ->insert([
+                        'item_id'           =>  $itemId,
+                        'file_path'         =>  $filePath,
+                        'representation'    =>  $representation,
+                        'album_standalone'  =>  $albumStandalone
+                    ]);
+            }
         }
 
         return [
