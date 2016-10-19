@@ -406,7 +406,7 @@ class ItemRepository {
      * @param  string $representation The represenations
      * @return integer The count
      */
-    protected function _getRepCountByDigitalID($digitalId, $representation) : integer
+    protected function _getRepCountByDigitalID($digitalId, $representation) : int
     {
         $count = \DB::table('item')
                     ->where('masterKey', $digitalId)
@@ -424,7 +424,7 @@ class ItemRepository {
      * @param  string $representation The represenation for which the count is to be found
      * @return integer  Count
      */
-    protected function _getRepCountByCollectionID($collectionID, $representation) : integer
+    protected function _getRepCountByCollectionID($collectionID, $representation) : int
     {
         $count = \DB::table('item')
                     ->whereIn('itemID', function($query) use ($collectionID) {
@@ -595,9 +595,9 @@ class ItemRepository {
  * @param  EloquentRowObject $imageRow         [description]
  * @param  EloquentRowObject $imageItemTextRow [description]
  * @param  EloquentRowObject $collectionRow    [description]
- * @return Array data of all the images
+ * @return Mixed data of all the images or false
  */
-    protected function _getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRow, $collectionRow) : array
+    protected function _getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRow, $collectionRow)
     {
         $itemId = $itemTextRow->itemID;
         $supress = $itemTextRow->cb;
@@ -635,6 +635,8 @@ class ItemRepository {
             $ieDmdIsFormatOf = $albumItemTextRow->cl;
         } elseif (!empty($albumItemTextRow->bk)) {
             $ieDmdIsFormatOf = $albumItemTextRow->bk;
+        } else {
+            $ieDmdIsFormatOf = '';
         }
 
         $data['ie_dmd_identifier'] = $itemId;
@@ -731,6 +733,7 @@ class ItemRepository {
         $data['rep2_1_label'] = $itemTextRow->ab;
         $data['rep3_1_label'] = $itemTextRow->ab;
 
+
         /*
         Check on the Permanent storage if all the three files exist, if any one file does
         not exist, then return false (which leads to this image being skipped for sip generation)
@@ -742,12 +745,22 @@ class ItemRepository {
          $result2 = $this->_doesFileExistsOnPermStorage($data['fid1_2_amd_fileOriginalPath'], $itemId, 'c', 'a');
          $result3 = $this->_doesFileExistsOnPermStorage($data['fid1_3_amd_fileOriginalPath'], $itemId, 'o', 'a');
 
-         $doFilesExistInPermStorage = $result1 && $result2 && $result3;
+         $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
+
+
 
          if(!$doFilesExistInPermStorage) {
              return false;
+         } else {
+             /*
+             If files exist on the Permanent Storage, then replace the paths in
+             data array as there may be case that variations exist
+              */
+             $data['fid1_1_amd_fileOriginalPath'] = $result1['filePath'];
+             $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
+             $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
          }
-
+         //dd($data);
 
         return $data;
     }
@@ -940,7 +953,14 @@ class ItemRepository {
              $result2 = $this->_doesFileExistsOnPermStorage($data['fid1_2_amd_fileOriginalPath'], $itemId, 'c', 's');
              $result3 = $this->_doesFileExistsOnPermStorage($data['fid1_3_amd_fileOriginalPath'], $itemId, 'o', 's');
 
-             $doFilesExistInPermStorage = $result1 && $result2 && $result3;
+             $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
+
+             if($doFilesExistInPermStorage) {
+                 $data['fid1_1_amd_fileOriginalPath'] = $result1['filePath'];
+                 $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
+                 $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
+             }
+
         } else {
             $itemTextRowFound = false;
         }
@@ -1034,34 +1054,134 @@ class ItemRepository {
      *
      * Function to check if the file exists on the Permanent Strorage
      * @param  string $filePath Path of file to be searched
-     * @return  boolean     True if it is found, False otherwise
+     * @return Array  Array with 'found' and 'filePath' keys
      */
-    protected function _doesFileExistsOnPermStorage($filePath, $itemId, $representation, $albumStandalone) : bool
+    protected function _doesFileExistsOnPermStorage($filePath, $itemId, $representation, $albumStandalone) : array
     {
-        $count = \DB::table('rosetta_permanent_storage_legacy')
-                    ->where('file_path', $filePath)
-                    ->count();
 
-        if ($count == 0) {
-            $existing = \DB::table('missing_files_on_permanent_storage')
-                        ->where('file_path', $filePath)
-                        ->count();
+        $result = $this->_findOnPermanentStorage($filePath);
 
-            if ($existing == 0) {
-                \DB::table('missing_files_on_permanent_storage')
-                    ->insert([
-                        'item_id'           =>  $itemId,
-                        'file_path'         =>  $filePath,
-                        'representation'    =>  $representation,
-                        'album_standalone'  =>  $albumStandalone
-                    ]);
-            }
+
+        if ($result['count'] == 0) {
+            /**
+             * The file was not found in permanent storage, so lets look with variations
+             */
+
+             $pi = pathinfo($filePath);
+
+             $dirName = $pi['dirname'];
+             $fileName = $pi['filename'];
+             $extension = $pi['extension'];
+
+
+
+             /*
+             If this is a master or comaster representation, then
+              */
+             if (in_array($representation, ['m','c'])) {
+
+                 /*
+                 Try changing the u with _m in file name for master and adding _c in the fileName
+                 for the co master
+                 */
+                 if ($representation === 'm') {
+                     $newFilePath = $dirName .'/'. substr($fileName, 0, -1) . '_m' .'.'.$extension;
+                 } elseif ($representation == 'c') {
+                     $newFilePath = $dirName .'/'. $fileName . '_c' .'.'.$extension;
+                 }
+
+                 $count = $this->_findOnPermanentStorage($newFilePath)['count'];
+                 if ($count > 0) {
+                     return [
+                         'found'    =>  true,
+                         'filePath' =>  $newFilePath
+                     ];
+                }
+
+                /*
+                Try changing the extension of the the file if its tif,
+                then try with jpg and vice versa
+                */
+                if (in_array($extension, ['tif', 'TIF'])) {
+                    $newExtension = 'jpg';
+                } elseif (in_array($extension, ['jpg', 'JPG'])) {
+                    $newExtension = 'tif';
+                }
+                $newFilePath = $dirName . '/'. $fileName .'.'.$newExtension;
+
+                $count = $this->_findOnPermanentStorage($newFilePath)['count'];
+                if ($count > 0) {
+                    return [
+                        'found'    =>  true,
+                        'filePath' =>  $newFilePath
+                    ];
+                }
+             }
+
+             /*
+             In any case, check with the case insensitive version of filename and extension
+              */
+             $newFilePath = $dirName . '/' . strtolower($fileName) . '.' . strtolower($extension);
+
+             $result = $this->_findOnPermanentStorage($newFilePath, true);
+
+             if ($result['count'] > 0) {
+                 return [
+                     'found'    =>  true,
+                     'filePath' =>  $result['filePath']
+                 ];
+             }
+
+
+            // $existing = \DB::table('missing_files_on_permanent_storage')
+            //             ->where('file_path', $filePath)
+            //             ->count();
+            //
+            // if ($existing == 0) {
+            //     \DB::table('missing_files_on_permanent_storage')
+            //         ->insert([
+            //             'item_id'           =>  $itemId,
+            //             'file_path'         =>  $filePath,
+            //             'representation'    =>  $representation,
+            //             'album_standalone'  =>  $albumStandalone
+            //         ]);
+            // }
         }
 
+        return [
+            'found'    =>  $result['count'],
+            'filePath' =>  $result['filePath']
+        ];
+    }
 
-        $this->_writeLog('Image Path: '.$filePath.' found on Permanent Storage: '. $count);
+    /**
+     * Function to check if the specified file exists in Permanent Storage
+     * @param  string $filePath The path to be checked on file system
+     * @return Array containting 'count' and 'filePath' keys
+     */
+    protected function _findOnPermanentStorage($filePath, $applyLower = false)
+    {
 
-        return $count > 0 ? true : false;
+        $fieldName = !$applyLower ? 'file_path' : 'lower_file_path';
+
+        $row = \DB::table('rosetta_permanent_storage_legacy')
+                    ->where($fieldName, $filePath)
+                    ->first();
+
+
+        if (empty($row)) {
+            $this->_writeLog('File variation: ' . $filePath.' does not exist on Permanent Storage');
+            return [
+                'count' =>  0,
+                'filePath' => $filePath
+            ];
+        }
+
+        $this->_writeLog('File variation: ' . $filePath.' exists on Permanent Storage');
+        return [
+            'count' =>  1,
+            'filePath' => $row->file_path
+        ];
     }
 
     /**

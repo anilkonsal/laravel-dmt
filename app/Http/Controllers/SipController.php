@@ -62,7 +62,7 @@ class SipController extends Controller
                 'itemId' => $itemId,
                 'albumZipPath'  =>  $zipPath,
                 'debug' => false,
-                'logFile'   =>  $logFileUrl
+                'logFile'   => (file_exists($logFile)) ?  $logFileUrl : ''
             ]);
         }
         return view('sip.album');

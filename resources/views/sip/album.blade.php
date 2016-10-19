@@ -91,22 +91,26 @@
     </div>
     @endif
     @if(isset($logFile))
-    <div class="row">
-        <div class="col-md-6 col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3>Log for Item ID: {{ $itemId }}</h3>
-                </div>
-                <div class="panel-body">
-                    <div class="row">
-                        <div class="col-md-6 col-lg-6">
-                            <a href="{{ $logFile}}" target="_blank" ><i class="fa fa-eye" aria-hidden="true"></i> View Log</a>
+        <div class="row">
+            <div class="col-md-6 col-lg-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3>Log for Item ID: {{ $itemId }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12 col-lg-12">
+                                @if(!empty($logFile))
+                                    <a href="{{ $logFile}}" target="_blank" ><i class="fa fa-eye" aria-hidden="true"></i> View Log</a>
+                                @else
+                                    <h4>Log file not generated, make sure that this item has any albums</h4>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </diV>
+        </diV>
     @endif
 </div>
 @endsection

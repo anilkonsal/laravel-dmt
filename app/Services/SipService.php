@@ -103,7 +103,6 @@ class SipService {
 
         $xml = $this->_generateXMLForAlbumSip($data);
 
-        // dd($xml);
         file_put_contents($mainFolder.'/content/ie.xml', $xml);
         return $mainFolder;
     }
@@ -229,6 +228,8 @@ class SipService {
         if(file_exists($logFile)) {
             unlink($logFile);
         }
+
+        // dd($itemizedCounts);
 
         foreach ($itemizedCounts as $childItemId => $counts) {
             if ($counts['albumsCount'] > 0) {
