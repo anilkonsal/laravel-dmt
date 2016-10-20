@@ -375,17 +375,17 @@
 
   <mets:fileSec>
     <mets:fileGrp ID="rep1" ADMID="rep1-amd">
-      <mets:file ID="fid1-1" ADMID="fid1-1-amd">
+      <mets:file ID="fid1-1" DMDID="fid1-1-dmd" ADMID="fid1-1-amd">
         <mets:FLocat LOCTYPE="URL" xlin:href="{{ $rep1_amd_url }}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
       </mets:file>
     </mets:fileGrp>
     <mets:fileGrp ID="rep2" ADMID="rep2-amd">
-      <mets:file ID="fid1-2" ADMID="fid1-2-amd">
+      <mets:file ID="fid1-2" DMDID="fid1-2-dmd" ADMID="fid1-2-amd">
         <mets:FLocat LOCTYPE="URL" xlin:href="{{ $rep2_amd_url }}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
       </mets:file>
     </mets:fileGrp>
 	<mets:fileGrp ID="rep3" ADMID="rep3-amd">
-      <mets:file ID="fid1-3" ADMID="fid1-3-amd">
+      <mets:file ID="fid1-3" DMDID="fid1-3-dmd" ADMID="fid1-3-amd">
         <mets:FLocat LOCTYPE="URL" xlin:href="{{ $rep3_amd_url }}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
       </mets:file>
     </mets:fileGrp>
