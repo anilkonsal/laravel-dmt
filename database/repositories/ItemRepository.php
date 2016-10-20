@@ -491,7 +491,8 @@ class ItemRepository {
                         ->where('itemID', $albumId)->first();
 
         $imageRows = \DB::table('item')
-                        ->whereIn('itemID', function($query) use ($albumId) {
+                        ->join('collection', 'item.itemID', '=', 'collection.itemID')
+                        ->whereIn('item.itemID', function($query) use ($albumId) {
                             $query->select('collection.itemID')
                                 ->from('item')
                                 ->join('collection','item.itemID', '=', 'collection.collectionID')
@@ -499,9 +500,11 @@ class ItemRepository {
                                 ->where('itemType', 'Album')
                                 ->where('collection.collectionID', $albumId);
                         })
+
                         ->where('assetType', 'image')
                         ->where('itemType', 'Image')
                         ->where('status', '<>', 'rejected')
+                        ->orderBy(\DB::raw('cast(collection.itemIndex as unsigned)'))
                         ->get()->keyBy('itemID');
 
 
@@ -510,7 +513,8 @@ class ItemRepository {
                                     $query->select('itemID')
                                         ->from('collection')
                                         ->where('collectionID', $albumId);
-                                })->get()->keyBy('itemID');
+                                })
+                                ->get()->keyBy('itemID');
 
 
         $collectionRows = \DB::table('collection')
