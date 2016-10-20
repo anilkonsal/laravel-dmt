@@ -57,6 +57,7 @@ class ItemRepository {
 
 
     const REASON_ALREADY_MIGRATED = 'Already Migrated!';
+    const REASON_ALREADY_MARKED_MIGRATED = 'Item already marked Migrated in item table!';
     const REASON_ITEMTEXT_ROW_NOT_FOUND = 'Row does not exist in ItemText table';
     const REASON_STATUS_INACTIVE = 'Status Inactive';
     const REASON_CLOSED_IS_YES = 'Closed is Yes';
@@ -475,8 +476,7 @@ class ItemRepository {
         $this->_log = $logFile;
 
 
-        $albumAcmsRow = \DB::table('item')
-                    ->where('itemID', $itemId)->first();
+        $albumAcmsRow = Item::find($itemId)->first();
 
 
         $itemTextRow = \DB::table('itemtext')
@@ -639,6 +639,8 @@ class ItemRepository {
             $ieDmdIsFormatOf = '';
         }
 
+        $title = !empty($imageItemTextRow->ab) ? $imageItemTextRow->ab : $itemTextRow->ab;
+
         $data['ie_dmd_identifier'] = $itemId;
         $data['ie_dmd_title'] = $itemTextRow->ab;
         $data['ie_dmd_creator'] = $artist;
@@ -649,7 +651,7 @@ class ItemRepository {
         $data['ie_dmd_isFormatOf'] = $ieDmdIsFormatOf;
         $data['ie_dmd_isFormatOf'] = $this->_getUrlPart($data['ie_dmd_isFormatOf']);
 
-        $data['fid1_1_dmd_title'] = !empty($imageItemTextRow->ab) ? $imageItemTextRow->ab : $itemTextRow->ab;
+        $data['fid1_1_dmd_title'] = $title;
         $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_dmd_identifier'] = $imageRow->itemID;
@@ -658,7 +660,7 @@ class ItemRepository {
         $data['fid1_1_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
         $data['fid1_1_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_1_dmd_isFormatOf']);
 
-        $data['fid1_2_dmd_title'] = !empty($imageItemTextRow->ab) ? $imageItemTextRow->ab : $itemTextRow->ab;
+        $data['fid1_2_dmd_title'] = $title;
         $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_dmd_identifier'] = $imageRow->itemID;
@@ -667,7 +669,7 @@ class ItemRepository {
         $data['fid1_2_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
         $data['fid1_2_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_2_dmd_isFormatOf']);
 
-        $data['fid1_3_dmd_title'] = !empty($imageItemTextRow->ab) ? $imageItemTextRow->ab : $itemTextRow->ab;
+        $data['fid1_3_dmd_title'] = $title;
         // $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
         $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
         $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
@@ -679,13 +681,13 @@ class ItemRepository {
 
         $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
         $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "h." . $imageRow->wtype;
-        $data['fid1_3_amd_label'] = $itemTextRow->ab;
+        $data['fid1_3_amd_label'] = $title;
         $data['fid1_3_amd_groupID'] = $imageRow->itemKey;
 
         $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
 
         if ($supress  == 'Image') {
-            $data['fid1_3_dmd_title'] = $itemTextRow->ab;
+            $data['fid1_3_dmd_title'] = $title;
             // $data['fid1_3_dmd_source'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
             $data['fid1_3_dmd_source'] = $imageRow->lroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
             $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->lroot .'/'. $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
@@ -697,7 +699,7 @@ class ItemRepository {
 
             $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/screenres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
             $data['fid1_3_amd_fileOriginalName'] = $imageRow->itemKey . "r." . $imageRow->ltype;
-            $data['fid1_3_amd_label'] = $itemTextRow->ab;
+            $data['fid1_3_amd_label'] = $title;
             $data['fid1_3_amd_groupID'] = $imageRow->itemKey;
 
             $data['rep3_amd_rights'] = 'AR_EVERYONE';
@@ -718,20 +720,20 @@ class ItemRepository {
 
         $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $masterYear . "/" . $imageRow->masterFolder ."/" .  $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_amd_fileOriginalName'] = $imageRow->masterKey . "u." . $imageRow->fromType;
-        $data['fid1_1_amd_label'] = $itemTextRow->ab;
+        $data['fid1_1_amd_label'] = !empty($imageItemTextRow->ab) ? $imageItemTextRow->ab : $itemTextRow->ab;
         $data['fid1_1_amd_groupID'] = $imageRow->itemKey;
 
         $data['fid1_2_amd_fileOriginalPath'] = "/permanent_storage/legacy/comaster/". $comasterYear . "/"  . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_amd_fileOriginalName'] = $imageRow->fromKey . "." . $imageRow->fromType;
-        $data['fid1_2_amd_label'] = $itemTextRow->ab;
+        $data['fid1_2_amd_label'] = !empty($imageItemTextRow->ab) ? $imageItemTextRow->ab : $itemTextRow->ab;
         $data['fid1_2_amd_groupID'] = $imageRow->itemKey;
 
         $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'];
         $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'];
 
-        $data['rep1_1_label'] = $itemTextRow->ab;
-        $data['rep2_1_label'] = $itemTextRow->ab;
-        $data['rep3_1_label'] = $itemTextRow->ab;
+        $data['rep1_1_label'] = $title;
+        $data['rep2_1_label'] = $title;
+        $data['rep3_1_label'] = $title;
 
 
         /*
@@ -747,8 +749,6 @@ class ItemRepository {
 
          $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
 
-
-
          if(!$doFilesExistInPermStorage) {
              return false;
          } else {
@@ -760,7 +760,6 @@ class ItemRepository {
              $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
              $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
          }
-         //dd($data);
 
         return $data;
     }
@@ -781,8 +780,7 @@ class ItemRepository {
 
         $this->_log = $logFile;
 
-        $acmsRow = \DB::table('item')
-                    ->where('itemID', $itemId)->first();
+        $acmsRow = Item::find($itemId)->first();
 
         $digitalId = $acmsRow->fromKey;
 
@@ -798,10 +796,18 @@ class ItemRepository {
         $this->_writeLog('Image item Id: '. $imageRow->itemID);
 
         /*
+        Check if the item has already been marked as migrated in item table, if yes, then skip this item
+         */
+        $isDbMigrated = $this->_checkIfMigrated($acmsRow);
+        $this->_writeLog('Marked Migrated in Item table: ' . ($isDbMigrated ? 'Yes' : 'No'));
+
+
+        /*
         Check if the item has already been migrated, if yes, then skip this item
          */
         $isMigrated = $this->_isMigrated($imageRow);
         $this->_writeLog('Migrated: ' . ($isMigrated ? 'Yes' : 'No'));
+
 
         /*
         Check if the status of both the ACMS and Image Row is active, if no, then skip
@@ -975,10 +981,11 @@ class ItemRepository {
              $reason = self::REASON_CLOSED_IS_YES;
          } elseif (!$doFilesExistInPermStorage) {
              $reason = self::REASON_FILES_DO_NOT_EXIST_ON_PERM_STORAGE;
+         } elseif ($isDbMigrated) {
+             $reason = self::REASON_ALREADY_MARKED_MIGRATED;
          }
 
          $this->_writeLog('<h3>Conclusion</h3>');
-
 
          if (!empty($reason)) {
              $this->_writeLog('<div style="background-color:red; color:#fff">SIP not be generated for item id: '. $itemId.'</div>');
@@ -986,11 +993,33 @@ class ItemRepository {
              $this->_closeLog();
              return false;
          } else {
+             $this->_markAsMigrated($acmsRow);
              $this->_writeLog('<div style="background-color:#15a545; color: #fff">SIP generated for item id: '. $itemId.'</div>');
          }
          $this->_closeLog();
 
         return $data;
+    }
+
+    /**
+     * Function to mark the row as migrated
+     * @param  EloquentRowObject $row
+     * @return Void
+     */
+    protected function _markAsMigrated($row)
+    {
+        $row->is_migrated = 1;
+        $row->save();
+    }
+
+    /**
+     * Function to check the row if it is migrated
+     * @param  EloquentRowObject $row
+     * @return boolean
+     */
+    protected function _checkIfMigrated($row)
+    {
+        return $row->is_migrated == 1 ? true : false;
     }
 
 
