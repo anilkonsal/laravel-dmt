@@ -113,7 +113,7 @@
         <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
           <section id="accessRightsPolicy">
             <record>
-              <key id="policyId">1062</key>
+              <key id="policyId">{{ $rep3_amd_rights }}</key>
             </record>
           </section>
         </dnx>

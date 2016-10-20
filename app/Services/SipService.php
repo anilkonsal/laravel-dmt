@@ -198,7 +198,9 @@ class SipService {
 
         $ieAmdXml = view('xml.sip.album.partials.ie-amd')->render();
 
-        $repAmdXml = view('xml.sip.album.partials.rep-amd')->render();
+        $repAmdXml = view('xml.sip.album.partials.rep-amd', [
+                'rep3_amd_rights'   =>  $itemData['rep3_amd_rights']
+            ])->render();
 
         $xml = view('xml.sip.album.album', [
             'xml'   =>  $ieDmdXml .
