@@ -29,7 +29,11 @@
                                     </span>
                                 @endif
                                 <br/>
-                                <input id="force_generation" type="checkbox" name="force_generation" value="yes">&nbsp;&nbsp;Force Generation (Regenrate already marked migrated)<br/>
+                                <input id="force_generation" type="checkbox" name="force_generation" value="yes">&nbsp;&nbsp;Force Regeneration
+                                    <a href="javascript:void(0);" data-toggle="popover" data-placement="right" title="Help"
+                                    data-content="When this option is checked, system will ignore whether this item has been Marked Migrated in database and will generate it."
+                                    data-original-title="Popover Header" aria-describedby="popover573097"><i class="fa fa-question-circle-o"></i></a>
+                                <br/>
                                 <br/>
                                 <button type="submit" class="btn btn-primary">
                                     Generate Now

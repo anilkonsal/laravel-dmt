@@ -476,7 +476,7 @@ class ItemRepository {
         $this->_log = $logFile;
 
 
-        $albumAcmsRow = Item::find($itemId)->first();
+        $albumAcmsRow = Item::where('itemID', $itemId)->first();
 
 
         $itemTextRow = \DB::table('itemtext')
@@ -807,13 +807,14 @@ class ItemRepository {
      */
     public function getSipDataForStandAlone($itemId, $logFile, $forceGeneration = false)
     {
+
         $data = [];
         $reason = NULL;
         $doFilesExistInPermStorage = true;
 
         $this->_log = $logFile;
 
-        $acmsRow = Item::find($itemId)->first();
+        $acmsRow = Item::where('itemID', $itemId)->first();
 
         $digitalId = $acmsRow->fromKey;
 
@@ -823,6 +824,7 @@ class ItemRepository {
                     ->where('itemType', 'image')
                     ->first();
 
+        //dd($acmsRow);
 
         $this->_writeLog('<h2><u>Started with item Id: '. $itemId.'</u></h2>');
         $this->_writeLog('ACMS item Id: '. $itemId);
@@ -868,6 +870,8 @@ class ItemRepository {
         $imageItemTextRow = \DB::table('itemtext')
                         ->where('itemID', $imageRow->itemID)
                         ->first();
+
+
 
         if (!empty($itemTextRow)) {
 
