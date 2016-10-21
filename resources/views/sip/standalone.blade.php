@@ -28,16 +28,16 @@
                                         <strong>{{ $errors->first('item_id') }}</strong>
                                     </span>
                                 @endif
-
                                 <br/>
-
                                 <button type="submit" class="btn btn-primary">
                                     Generate Now
                                 </button>
-
                             </div>
-
                         </div>
+                        <div>
+                        <input id="force_generation" type="checkbox" name="force_generation" value="yes">&nbsp;&nbsp;Force Generation<br/>
+                        </div>
+
                     </form>
                 </div>
             </div>
@@ -60,34 +60,6 @@
                 </div>
             </div>
         </div>
-        @if($debug)
-        <div class="col-md-6 col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3>Itemized Report</h3>
-                </div>
-                <div class="panel-body">
-                    <div class="row">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <td>Item ID</td><td>Albums Count</td><td>Album Images</td><td>Stand Alone Images</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                            @foreach($itemizedCounts as $itemID =>  $itemizedCount)
-                            <tr>
-                                <td>{{ $itemID }}</td><td>{{ $itemizedCount['albumsCount'] }}</td><td>{{ $itemizedCount['albumImagesCount'] }}</td><td>{{ $itemizedCount['standaloneImagesCount'] }}</td>
-                            </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
     </div>
     @endif
     @if(isset($logFile))

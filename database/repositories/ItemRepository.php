@@ -500,7 +500,6 @@ class ItemRepository {
                                 ->where('itemType', 'Album')
                                 ->where('collection.collectionID', $albumId);
                         })
-
                         ->where('assetType', 'image')
                         ->where('itemType', 'Image')
                         ->where('status', '<>', 'rejected')
@@ -753,17 +752,46 @@ class ItemRepository {
 
          $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
 
-         if(!$doFilesExistInPermStorage) {
-             return false;
+
+         /*
+         If files exist on the Permanent Storage, then replace the paths in
+         data array as there may be case that variations exist
+          */
+
+
+
+         if ($doFilesExistInPermStorage) {
+
+             $basename1 = basename($result1['filePath']);
+             $basename2 = basename($result2['filePath']);
+             $basename3 = basename($result3['filePath']);
+
+             $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'] = $result1['filePath'];
+             $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
+             $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
+
+             $data['fid1_1_amd_fileOriginalName'] = $basename1;
+             $data['fid1_2_amd_fileOriginalName'] = $basename2;
+             $data['fid1_3_amd_fileOriginalName'] = $basename3;
+
+             $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
+             $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
+
+             $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
+             $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
+
+             if ($supress  == 'Image') {
+                 $data['fid1_3_dmd_source'] = $imageRow->lroot . "/" . $imageRow->wpath . "/" . $basename3;
+                 $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->lroot .'/'. $imageRow->wpath . "/" . $basename3;
+             } else {
+                 $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $basename3;
+                 $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $basename3;
+             }
+
          } else {
-             /*
-             If files exist on the Permanent Storage, then replace the paths in
-             data array as there may be case that variations exist
-              */
-             $data['fid1_1_amd_fileOriginalPath'] = $result1['filePath'];
-             $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
-             $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
+             return false;
          }
+
 
         return $data;
     }
@@ -774,9 +802,10 @@ class ItemRepository {
     /**
      * Function to get the SIP data for a single standalone image
      * @param  Integer $itemId The item ID of the ACMS Row
+     * @param  boolean $forceGeneration Whether the items marked migrated in database should be regenerated?
      * @return Array         Data field with differnt items needed to fill in XML
      */
-    public function getSipDataForStandAlone($itemId, $logFile)
+    public function getSipDataForStandAlone($itemId, $logFile, $forceGeneration = false)
     {
         $data = [];
         $reason = NULL;
@@ -799,12 +828,14 @@ class ItemRepository {
         $this->_writeLog('ACMS item Id: '. $itemId);
         $this->_writeLog('Image item Id: '. $imageRow->itemID);
 
-        /*
-        Check if the item has already been marked as migrated in item table, if yes, then skip this item
-         */
-        $isDbMigrated = $this->_checkIfMigrated($acmsRow);
-        $this->_writeLog('Marked Migrated in Item table: ' . ($isDbMigrated ? 'Yes' : 'No'));
+        if (!$forceGeneration) {
 
+            /*
+            Check if the item has already been marked as migrated in item table, if yes, then skip this item
+             */
+            $isDbMigrated = $this->_checkIfMigrated($acmsRow);
+            $this->_writeLog('Marked Migrated in Item table: ' . ($isDbMigrated ? 'Yes' : 'No'));
+        }
 
         /*
         Check if the item has already been migrated, if yes, then skip this item
@@ -965,11 +996,38 @@ class ItemRepository {
 
              $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
 
-             if($doFilesExistInPermStorage) {
-                 $data['fid1_1_amd_fileOriginalPath'] = $result1['filePath'];
-                 $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
-                 $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
+             if ($doFilesExistInPermStorage) {
+
+                 $basename1 = basename($result1['filePath']);
+                 $basename2 = basename($result2['filePath']);
+                 $basename3 = basename($result3['filePath']);
+
+                 $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'] = $result1['filePath'];
+                 $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
+                 $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
+
+                 $data['fid1_1_amd_fileOriginalName'] = $basename1;
+                 $data['fid1_2_amd_fileOriginalName'] = $basename2;
+                 $data['fid1_3_amd_fileOriginalName'] = $basename3;
+
+                 $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
+                 $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
+
+                 $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
+                 $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
+
+                 if ($supress  == 'Image') {
+                     $data['fid1_3_dmd_source'] = $imageRow->lroot . "/" . $imageRow->wpath . "/" . $basename3;
+                     $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->lroot .'/'. $imageRow->wpath . "/" . $basename3;
+                 } else {
+                     $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $basename3;
+                     $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $basename3;
+                 }
+
              }
+
+            //  dd($data['fid1_1_amd_fileOriginalPath'], $result1['filePath']);
+
 
         } else {
             $itemTextRowFound = false;
@@ -985,9 +1043,11 @@ class ItemRepository {
              $reason = self::REASON_CLOSED_IS_YES;
          } elseif (!$doFilesExistInPermStorage) {
              $reason = self::REASON_FILES_DO_NOT_EXIST_ON_PERM_STORAGE;
-         } elseif ($isDbMigrated) {
+         } elseif (!$forceGeneration && $isDbMigrated) {
              $reason = self::REASON_ALREADY_MARKED_MIGRATED;
          }
+
+
 
          $this->_writeLog('<h3>Conclusion</h3>');
 

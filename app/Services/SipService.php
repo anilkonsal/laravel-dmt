@@ -14,10 +14,10 @@ class SipService {
     }
 
 
-    public function generateItemSip($itemId, $logFile)
+    public function generateItemSip($itemId, $logFile, $forceGeneration = false)
     {
 
-        $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile);
+        $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile, $forceGeneration);
 
         if ($data === false) {
             return false;
@@ -255,7 +255,7 @@ class SipService {
      * @param  string $logFile Path of the log file to be generated
      * @return mixed   Path of zip file on success or false otherwise
      */
-    public function generateSip($itemId, $logFile)
+    public function generateSip($itemId, $logFile, $forceGeneration = false)
     {
         $itemizedCounts = $this->_itemRepository->getDetails($itemId)['itemizedCounts'];
         $folders = [];
@@ -266,7 +266,7 @@ class SipService {
 
         foreach ($itemizedCounts as $childItemId => $counts) {
             if ($counts['standaloneImagesCount'] > 0) {
-                $result = $this->generateItemSip($childItemId, $logFile);
+                $result = $this->generateItemSip($childItemId, $logFile, $forceGeneration);
                 if ($result !== false) {
                     $folders[] = $result;
                 }
