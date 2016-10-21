@@ -48,7 +48,7 @@ class SipController extends Controller
             ]);
 
             $itemId = trim($request->input('item_id'));
-            $debug = $request->input('debug');
+            $forceGeneration = $request->input('force_generation');
 
             if (empty($itemId)) {
                 throw new \InvalidArgumentException( 'Please provide the item ID', '400');
@@ -56,12 +56,12 @@ class SipController extends Controller
 
             $logFile = public_path().'/downloads/sips/log-'.$itemId.'.html';
             $logFileUrl = '/downloads/sips/log-'.$itemId.'.html';
-            $zipPath = $sipService->generateAlbumSip($itemId, $logFile);
+            $zipPath = $sipService->generateAlbumSip($itemId, $logFile, $forceGeneration);
 
             return view('sip.album', [
                 'itemId' => $itemId,
                 'albumZipPath'  =>  $zipPath,
-                'debug' => false,
+                'forceGeneration' => $forceGeneration,
                 'logFile'   => (file_exists($logFile)) ?  $logFileUrl : ''
             ]);
         }

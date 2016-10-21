@@ -466,18 +466,24 @@ class ItemRepository {
      * Function to generate the SIP data for an individual Album
      * @param  integer $itemId ACMS item id for the album
      * @param  string $logFile Path of the log file to be written
+     * @param  boolean $forceGeneration Whether to generate the marked migrated items
      * @return mixed  Array of data of all the images belonging to this album or False
      */
-    public function getSipDataForAlbum($itemId, $logFile)
+    public function getSipDataForAlbum($itemId, $logFile, $forceGeneration = false)
     {
         $data = [];
         $isMigrated = false;
 
         $this->_log = $logFile;
 
+        $this->_writeLog('<h2><u>Started with Album with ACMS item Id: '. $itemId.'</u></h2>');
 
         $albumAcmsRow = Item::where('itemID', $itemId)->first();
 
+        if (!$forceGeneration && $this->_checkIfMigrated($albumAcmsRow)) {
+            $this->_writeLog('<div style="background:red; color: white;">Album already marked migrated in database, so skipping this album.</div>');
+            return false;
+        }
 
         $itemTextRow = \DB::table('itemtext')
                         ->where('itemID', $itemId)->first();
@@ -504,8 +510,8 @@ class ItemRepository {
                         ->where('itemType', 'Image')
                         ->where('status', '<>', 'rejected')
                         ->orderBy(\DB::raw('cast(collection.itemIndex as unsigned)'))
-                        ->get()->keyBy('itemID');
-
+                        ->get()
+                        ->keyBy('itemID');
 
         $imageItemTextRows = \DB::table('itemtext')
                                 ->whereIn('itemID', function ($query) use ($albumId) {
@@ -513,18 +519,18 @@ class ItemRepository {
                                         ->from('collection')
                                         ->where('collectionID', $albumId);
                                 })
-                                ->get()->keyBy('itemID');
-
+                                ->get()
+                                ->keyBy('itemID');
 
         $collectionRows = \DB::table('collection')
                                 ->where('collectionID', $albumId)
-                                ->get()->keyBy('itemID');
+                                ->get()
+                                ->keyBy('itemID');
 
-        $this->_writeLog('<h2><u>Started with Album with ACMS item Id: '. $itemId.'</u></h2>');
+
         $this->_writeLog('Album Id: '. $albumId);
         $this->_writeLog('Number of images: '. count($imageRows));
         $this->_writeLog('Image ids: '. implode(', ', array_keys($imageRows->all())));
-
 
 
         /*
@@ -534,8 +540,6 @@ class ItemRepository {
             $this->_writeLog('Album row does not exist!');
             return false;
         }
-
-
 
         /*
         If there are no images in this album, then return false
@@ -559,6 +563,7 @@ class ItemRepository {
          */
         foreach ($imageRows as $itemId => $imageRow) {
             $this->_writeLog('<h3>Staring with Image Row with Id: '.$itemId.'</h3>');
+
             /*
             Check if the item has already been migrated, if yes, then skip this item
              */
@@ -577,7 +582,6 @@ class ItemRepository {
                 continue;
             }
 
-
             /*
             Check if the images are not closed, if yes, then skip the closed images
              */
@@ -588,6 +592,15 @@ class ItemRepository {
             $data[$itemId] = $this->_getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRows[$itemId], $collectionRows[$itemId]);
 
         }
+        /*
+        If all the images are found for this album, mark this album as migrated
+         */
+        $key = array_search(false, $data);
+        if ( $key === false) {
+            $this->_markAsMigrated($albumAcmsRow);
+        } else {
+            $this->_writeLog('<div style="background:red; color: white;">Files not found for Image with itemID: '. $key .'</div>');
+        }
 
         return $data;
     }
@@ -595,6 +608,7 @@ class ItemRepository {
 /**
  * Function to populate the data for an individual image belonfing to an album
  * @param  EloquentRowObject $itemTextRow      [description]
+ * @param  EloquentRowObject $albumItemTextRow      [description]
  * @param  EloquentRowObject $imageRow         [description]
  * @param  EloquentRowObject $imageItemTextRow [description]
  * @param  EloquentRowObject $collectionRow    [description]
@@ -609,7 +623,6 @@ class ItemRepository {
         $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
         $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
 
-
         $artist = '';
 
         if (!empty($itemTextRow->at)) {
@@ -621,14 +634,12 @@ class ItemRepository {
             }
         }
 
-
         $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
         $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
         $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
         $imageRow->lroot = str_replace('\\', '/', $imageRow->lroot);
 
         $type = $this->_getDcType($itemTextRow->al);
-
 
         if (!empty($itemTextRow->cl)) {
             $ieDmdIsFormatOf = $itemTextRow->cl;
@@ -757,9 +768,6 @@ class ItemRepository {
          If files exist on the Permanent Storage, then replace the paths in
          data array as there may be case that variations exist
           */
-
-
-
          if ($doFilesExistInPermStorage) {
 
              $basename1 = basename($result1['filePath']);

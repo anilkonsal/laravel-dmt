@@ -90,11 +90,13 @@ class SipService {
      *
      * Function to generate the sip for an individual album and its images
      * @param  integer $itemId ACMS item id for the album
+     * @param  String $logFile Log file name
+     * @param  boolean $generateAlbumSip Whether to generate the marked migrated items
      * @return mixed   Folder where the xml file was generated and placed
      *                 False otherwise
      */
-    public function generateAlbumItemSip($itemId, $logFile) {
-        $data = $this->_itemRepository->getSipDataForAlbum($itemId, $logFile);
+    public function generateAlbumItemSip($itemId, $logFile, $generateAlbumSip = false) {
+        $data = $this->_itemRepository->getSipDataForAlbum($itemId, $logFile, $generateAlbumSip);
 
         if ($data === false) {
             return false;
@@ -220,9 +222,11 @@ class SipService {
     /**
      * Function to generate the SIP for all albums belonging to an item id
      * @param  Integer $itemId ACMS item id
+     * @param  String $logFile log file name
+     * @param  Boolean $generateAlbumSip Whether to force regenerate the marked migrated items
      * @return mixed    Zip file path on success otherwise False
      */
-    public function generateAlbumSip($itemId, $logFile)
+    public function generateAlbumSip($itemId, $logFile, $generateAlbumSip = false)
     {
         $itemizedCounts = $this->_itemRepository->getDetails($itemId)['itemizedCounts'];
         $folders = [];
@@ -235,7 +239,7 @@ class SipService {
 
         foreach ($itemizedCounts as $childItemId => $counts) {
             if ($counts['albumsCount'] > 0) {
-                $result = $this->generateAlbumItemSip($childItemId, $logFile);
+                $result = $this->generateAlbumItemSip($childItemId, $logFile, $generateAlbumSip);
                 if ($result !== false) {
                     $folders[] = $result;
                 }
