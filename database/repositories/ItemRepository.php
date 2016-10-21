@@ -639,7 +639,7 @@ class ItemRepository {
         $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
         $imageRow->lroot = str_replace('\\', '/', $imageRow->lroot);
 
-        $type = $this->_getDcType($itemTextRow->al);
+        $types = $this->_getDcType($itemTextRow->al);
 
         if (!empty($itemTextRow->cl)) {
             $ieDmdIsFormatOf = $itemTextRow->cl;
@@ -659,7 +659,9 @@ class ItemRepository {
         $data['ie_dmd_title'] = $itemTextRow->ab;
         $data['ie_dmd_creator'] = $artist;
         $data['ie_dmd_source'] = $itemTextRow->ao;
-        $data['ie_dmd_type'] = $type;
+        foreach($types as $type) {
+            $data['ie_dmd_type'][] = $type;
+        }
         $data['ie_dmd_accessRights'] = $itemTextRow->cb;
         $data['ie_dmd_date'] = $this->_getDatePart($itemTextRow->ah);
         $data['ie_dmd_isFormatOf'] = $ieDmdIsFormatOf;
@@ -902,13 +904,15 @@ class ItemRepository {
             $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
             $imageRow->lroot = str_replace('\\', '/', $imageRow->lroot);
 
-            $itemTextRow->al = $this->_getDcType($itemTextRow->al);
+            $types = $this->_getDcType($itemTextRow->al);
+            foreach($types as $type) {
+                $data['ie_dmd_type'][] = $type;
+            }
 
             $data['ie_dmd_identifier'] = $itemId;
             $data['ie_dmd_title'] = $itemTextRow->ab;
             $data['ie_dmd_creator'] = $artist;
             $data['ie_dmd_source'] = $itemTextRow->ao;
-            $data['ie_dmd_type'] = $itemTextRow->al;
             $data['ie_dmd_accessRights'] = $itemTextRow->cb;
             $data['ie_dmd_date'] = $this->_getDatePart($itemTextRow->ah);
             $data['ie_dmd_isFormatOf'] = !empty($itemTextRow->cl) ? $itemTextRow->cl : $itemTextRow->bk;
@@ -1104,10 +1108,8 @@ class ItemRepository {
      * @param  String $type The two character type
      * @return String       The full form of the type
      */
-    protected function _getDcType($type) : string
+    protected function _getDcType($type) : array
     {
-        $type = trim($type,' ,');
-
         $typeMap = [
              'MM'   =>  'Multiple Media',
              'TR'   =>  'Textual Records',
@@ -1120,7 +1122,18 @@ class ItemRepository {
              'PR'   =>  'Philatelic Records',
              'MS'   =>  'Music'
         ];
-        return $typeMap[$type];
+
+        $type = trim($type,' ,');
+
+        $typesArr = explode(',', $type);
+
+        $dcTypes = [];
+
+        foreach ($typesArr as $typeItem) {
+            $dcTypes[] = $typeMap[$typeItem];
+        }
+
+        return $dcTypes;
     }
 
     /**
@@ -1349,7 +1362,6 @@ class ItemRepository {
      */
     protected function _isStatusActive($acmsItemRow, $imageItemRow) : bool
     {
-
         $this->_writeLog('<h4>Entered isStatusActive Function</h4>');
         $this->_writeLog('ACMS Row Status: '.$acmsItemRow->status);
         $this->_writeLog('Image Row Status: '.$imageItemRow->status);
