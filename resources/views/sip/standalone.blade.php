@@ -34,6 +34,7 @@
                                     data-content="When this option is checked, system will ignore whether this item has been Marked Migrated in database and will generate it."
                                     data-original-title="Popover Header" aria-describedby="popover573097"><i class="fa fa-question-circle-o"></i></a>
                                 <br/>
+                                <br/>
                                 <button type="submit" class="btn btn-primary">
                                     Generate Now
                                 </button>
