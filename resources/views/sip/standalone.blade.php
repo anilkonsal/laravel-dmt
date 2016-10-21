@@ -29,14 +29,16 @@
                                     </span>
                                 @endif
                                 <br/>
+                                <input id="force_generation" type="checkbox" name="force_generation" value="yes">&nbsp;&nbsp;Force Generation (Regenrate already marked migrated)<br/>
+                                <br/>
                                 <button type="submit" class="btn btn-primary">
                                     Generate Now
                                 </button>
                             </div>
                         </div>
-                        <div>
-                        <input id="force_generation" type="checkbox" name="force_generation" value="yes">&nbsp;&nbsp;Force Generation<br/>
-                        </div>
+
+
+
 
                     </form>
                 </div>
