@@ -1097,7 +1097,7 @@ class ItemRepository {
      * @param  EloquentRowObject $row
      * @return boolean
      */
-    protected function _checkIfMigrated($row)
+    protected function _checkIfMigrated($row) : bool
     {
         return $row->is_migrated == 1 ? true : false;
     }
@@ -1277,7 +1277,7 @@ class ItemRepository {
      * @param  string $filePath The path to be checked on file system
      * @return Array containting 'count' and 'filePath' keys
      */
-    protected function _findOnPermanentStorage($filePath, $applyLower = false)
+    protected function _findOnPermanentStorage($filePath, $applyLower = false) : array
     {
 
         $fieldName = !$applyLower ? 'file_path' : 'lower_file_path';
@@ -1379,7 +1379,7 @@ class ItemRepository {
      * @param  EloquentRowObject  $imageItemRow
      * @return boolean
      */
-    protected function _isClosedEqualToNo($acmsItemRow, $imageItemRow)
+    protected function _isClosedEqualToNo($acmsItemRow, $imageItemRow) : bool
     {
         $this->_writeLog('<h4>Entered isClosedEqualToNo Function</h4>');
         $this->_writeLog('ACMS Row Closed: '.$acmsItemRow->closed);
