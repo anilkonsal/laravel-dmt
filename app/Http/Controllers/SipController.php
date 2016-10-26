@@ -24,8 +24,10 @@ class SipController extends Controller
                 throw new \InvalidArgumentException( 'Please provide the item ID', '400');
             }
 
-            $logFile = public_path().'/downloads/sips/log-'.$itemId.'.html';
-            $logFileUrl = '/downloads/sips/log-'.$itemId.'.html';
+            $logFileName = 'log-'.$itemId.'-standalone.html';
+
+            $logFile = public_path().'/downloads/sips/'.$logFileName;
+            $logFileUrl = '/downloads/sips/'.$logFileName;
             $zipPath = $sipService->generateSip($itemId, $logFile, $forceGeneration);
 
             return view('sip.standalone', [
@@ -54,8 +56,11 @@ class SipController extends Controller
                 throw new \InvalidArgumentException( 'Please provide the item ID', '400');
             }
 
-            $logFile = public_path().'/downloads/sips/log-'.$itemId.'.html';
-            $logFileUrl = '/downloads/sips/log-'.$itemId.'.html';
+
+            $logFileName = 'log-'.$itemId.'-album.html';
+
+            $logFile = public_path().'/downloads/sips/'.$logFileName;
+            $logFileUrl = '/downloads/sips/'.$logFileName;
             $zipPath = $sipService->generateAlbumSip($itemId, $logFile, $forceGeneration);
 
             return view('sip.album', [
