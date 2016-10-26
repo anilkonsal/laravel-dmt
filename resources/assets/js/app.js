@@ -6,9 +6,13 @@
  */
 
 require('./bootstrap');
+require('../../../node_modules/bootstrap-datepicker/js/bootstrap-datepicker.js');
 
 $(document).ready(function(){
     $('[data-toggle="popover"]').popover();
+    $('.datepicker').datepicker({
+        format: 'dd/mm/yyyy'
+    });
 });
 
 /**

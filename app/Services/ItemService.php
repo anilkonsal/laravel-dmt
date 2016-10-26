@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Services;
+
 use Database\Repositories\ItemRepository;
+use GuzzleHttp\Client;
 
 class ItemService {
     public $itemRepository;
@@ -108,6 +110,46 @@ class ItemService {
     public function getTotalAlbumCounts()
     {
         return $this->itemRepository->getTotalAlbumCounts();
+    }
+
+    public function doIngestQa(string $date)
+    {
+        $pdsHandle = $this->_getPdsHandle();
+
+
+
+
+    }
+
+    /**
+     * Function to get the PDS Handle from the response of HTTP Reques to Exlibris
+     * @return string The PDS Code
+     */
+    protected function _getPdsHandle() : string
+    {
+        $username = config('app.pds.username');
+        $password = config('app.pds.password');
+        $url = config('app.pds.url');
+
+        $url = str_replace(['[username]', '[password]'], [$username, $password], $url);
+
+        $client = new Client();
+        $res = $client->request('GET', $url);
+        $content = $res->getBody()->getContents();
+
+        if (empty($content)) {
+            throw new Exception( 'Empty response content from api call for fetching PDS Handle');
+        }
+
+        $pdsFound = preg_match('/pds_handle=(\w+)/', $content, $matches);
+
+        if (!$pdsFound) {
+            throw new Exception('PDS Handle was not found in the Response!');
+        }
+
+        $pdsHandle = $matches[1];
+
+        return $pdsHandle;
     }
 
 }

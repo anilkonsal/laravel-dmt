@@ -63,6 +63,7 @@
                         <li><a href="{{ route('sip_generate_album') }}">Album Images</a></li>
                       </ul>
                     </li>
+                    <li><a href="{{ route('get_ingest_qa') }}">Ingest QA</a></li>
                     <li><a href="{{ route('details_report') }}">Search</a></li>
                 </ul>
 

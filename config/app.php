@@ -227,4 +227,10 @@ return [
 
     ],
 
+    'pds'   =>  [
+        'url'   =>  'https://libprd70.sl.nsw.gov.au/pds?func=login&bor_id=[username]&bor_verification=[password]&institute=SLNSW',
+        'username'  =>  'admin1',
+        'password'  =>  'a12345678A'
+    ]
+
 ];

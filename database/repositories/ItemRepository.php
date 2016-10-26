@@ -3,6 +3,7 @@
 namespace Database\Repositories;
 
 use App\Item;
+use Carbon\Carbon;
 
 class ItemRepository {
 
@@ -1042,9 +1043,6 @@ class ItemRepository {
 
              }
 
-            //  dd($data['fid1_1_amd_fileOriginalPath'], $result1['filePath']);
-
-
         } else {
             $itemTextRowFound = false;
         }
@@ -1150,6 +1148,9 @@ class ItemRepository {
             return '';
         }
         list($date, $time) = explode(' ', $dt);
+
+        $date = Carbon::createFromFormat('Y-m-d', $date)->format('d/m/Y');
+
         return $date;
     }
 

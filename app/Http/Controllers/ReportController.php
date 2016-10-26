@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
-
+use Carbon\Carbon;
 use App\Services\ItemService;
 class ReportController extends Controller
 {
@@ -145,6 +145,23 @@ class ReportController extends Controller
         $counts = $itemService->milleniumAlbumsMigrationCounts();
         $counts = $counts[0];
         return view('report.millenium-albums-migration', ['counts' => $counts]);
+    }
+
+    public function getIngestQa()
+    {
+        return view('report.ingest-qa');
+    }
+
+    public function postIngestQa(ItemService $itemService, Request $request)
+    {
+        $this->validate($request, [
+            'date' => 'required',
+        ]);
+
+        $date = Carbon::createFromFormat('d/m/Y',$request->date)->format('Y-m-d');
+
+        $itemService->doIngestQa($date);
+        return view('report.ingest-qa');
     }
 
 }
