@@ -155,13 +155,13 @@ class ReportController extends Controller
     public function postIngestQa(ItemService $itemService, Request $request)
     {
         $this->validate($request, [
-            'date' => 'required',
+            'ies' => 'required',
         ]);
 
-        $date = Carbon::createFromFormat('d/m/Y',$request->date)->format('Y-m-d');
+        $ies = $request->input('ies');
 
-        $itemService->doIngestQa($date);
-        return view('report.ingest-qa');
+        $data = $itemService->doIngestQa($ies);
+        return view('report.ingest-qa', ['data' => $data]);
     }
 
 }

@@ -626,15 +626,20 @@ class ItemRepository {
 
         $artist = '';
 
-        if (!empty($itemTextRow->at)) {
-            $artistRow = \DB::table('artist')
-                            ->where('artistID', $itemTextRow->at)
-                            ->first();
-            if ($artistRow) {
-                $artist = $artistRow->artist;
+        if(!empty($itemTextRow->at)) {
+            $artistID = (int)trim($itemTextRow->at, ',');
+
+            if (!empty($artistID)) {
+                $artistRow = \DB::table('artist')
+                                ->where('artistID', $artistID)
+                                ->first();
+
+                if ($artistRow) {
+                    $artist = $artistRow->artist;
+                }
             }
         }
-
+        
         $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
         $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
         $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
@@ -888,11 +893,13 @@ class ItemRepository {
 
 
             $artist = '';
+            $artistID = (int)trim($itemTextRow->at, ',');
 
-            if (!empty($itemTextRow->at)) {
+            if (!empty($artistID)) {
                 $artistRow = \DB::table('artist')
-                                ->where('artistID', $itemTextRow->at)
+                                ->where('artistID', $artistID)
                                 ->first();
+
                 if ($artistRow) {
                     $artist = $artistRow->artist;
                 }
@@ -1060,7 +1067,6 @@ class ItemRepository {
          } elseif (!$forceGeneration && $isDbMigrated) {
              $reason = self::REASON_ALREADY_MARKED_MIGRATED;
          }
-
 
 
          $this->_writeLog('<h3>Conclusion</h3>');

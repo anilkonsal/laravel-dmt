@@ -4,7 +4,6 @@
     <div class="row">
         <div class="col-md-6 col-lg-6">
             <div class="panel panel-default">
-
                 <div class="panel-body">
                     @if ($errors->count())
                     <div class="alert alert-danger">
@@ -17,17 +16,15 @@
                     @endif
                     <form method="post" action="{{ route('post_ingest_qa') }}">
                         {{ csrf_field() }}
-                        <div class="form-group{{ $errors->has('item_id') ? ' has-error' : '' }}">
-                            <label for="date" class="col-md-4 control-label">Enter the Date after which you want to search</label>
+                        <div class="form-group{{ $errors->has('ies') ? ' has-error' : '' }}">
+                            <label for="ies" class="col-md-4 control-label">Enter the Comma Separated list of IEs which you want to QA</label>
                             <div class="col-md-6">
-                                <input id="date" type="text" class="form-control datepicker" name="date" value="{{ old('date') }}" autofocus>
-
-                                @if ($errors->has('date'))
+                                <textarea id="ies"  class="form-control" name="ies" rows="5" autofocus>{{ old('ies') }}</textarea>
+                                @if ($errors->has('ies'))
                                     <span class="help-block">
-                                        <strong>{{ $errors->first('date') }}</strong>
+                                        <strong>{{ $errors->first('ies') }}</strong>
                                     </span>
                                 @endif
-
                                 <br/>
                                 <button type="submit" class="btn btn-primary">
                                     Fetch Report
@@ -40,127 +37,54 @@
         </div>
     </div>
 
-    @if(isset($count))
-    <div class="row">
-        <div class="col-md-6 col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3>Detail Report for images of Item ID: {{ $item_id }}</h3>
-                </div>
-                <div class="panel-body">
-                    <div class="row">
-                        <div class="col-md-6 col-lg-6">
-                            <table class="table table-striped">
-                                <tbody>
-                                    <tr>
-                                        <td colspan="2"><h3>Stand Alone</h3></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Master Count</td>
-                                        <td>{{ $count['masterCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Comaster Count</td>
-                                        <td>{{ $count['comasterCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Hi Res Count</td>
-                                        <td>{{ $count['hiresCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Std Res Count</td>
-                                        <td>{{ $count['stdresCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Preview Count</td>
-                                        <td>{{ $count['previewCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Thumbnail Count</td>
-                                        <td>{{ $count['thumbnailCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Total Images (Including all representations)</td>
-                                        <td>{{ $count['thumbnailCount'] + $count['previewCount'] +$count['stdresCount'] + $count['hiresCount'] + $count['comasterCount'] + $count['masterCount'] }}</td>
-                                    </tr>
-
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="col-md-6 col-lg-6">
-                            <table class="table table-striped">
-                                <tbody>
-                                    <tr>
-                                        <td colspan><h3>Albums</h3></td>
-                                        <td><h3>{{ $count['albumsCount'] }}</h3></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Master Count</td>
-                                        <td>{{ $count['albumMasterCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Comaster Count</td>
-                                        <td>{{ $count['albumComasterCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Hi Res Count</td>
-                                        <td>{{ $count['albumHiresCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Std Res Count</td>
-                                        <td>{{ $count['albumStdresCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Preview Count</td>
-                                        <td>{{ $count['albumPreviewCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Thumbnail Count</td>
-                                        <td>{{ $count['albumThumbnailCount'] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Total Images (Including all representations)</td>
-                                        <td>{{ $count['albumMasterCount'] + $count['albumComasterCount'] +$count['albumHiresCount'] + $count['albumStdresCount'] + $count['albumPreviewCount'] + $count['albumThumbnailCount'] }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
-
-
-                </div>
+    @if(isset($data))
+        @foreach ($data as $ie => $item)
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3>{{ $ie }} - {{ $item['api']['identifier'] }}
+                <small><a href="http://acmssearch.sl.nsw.gov.au/search/itemDetailPaged.cgi?itemID={{ $item['api']['identifier'] }}">View</a></small>
+            </h3>
             </div>
-        </div>
-        @if($debug)
-        <div class="col-md-6 col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3>Itemized Report</h3>
-                </div>
-                <div class="panel-body">
-                    <div class="row">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <td>Item ID</td><td>Albums Count</td><td>Album Images</td><td>Stand Alone Images</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                            @foreach($itemizedCounts as $itemID =>  $itemizedCount)
-                            <tr>
-                                <td>{{ $itemID }}</td><td>{{ $itemizedCount['albumsCount'] }}</td><td>{{ $itemizedCount['albumImagesCount'] }}</td><td>{{ $itemizedCount['standaloneImagesCount'] }}</td>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-5">
+                        <h4>API</h4>
+                        <table class="table table-striped table-bordered">
+                            <tr><td>Title</td><td>{{ $item['api']['title'] }}</td></tr>
+                            <tr><td>Type</td><td>{{ $item['api']['type'] }}</td></tr>
+                            <tr><td>Source</td><td>{{ $item['api']['source'] }}</td></tr>
+                            <tr><td>Image</td><td><a href="{{ $item['api']['file'] }}" target="_blank">
+                                {{ $item['api']['file'] }}</a></td>
                             </tr>
-                            @endforeach
-                            </tbody>
                         </table>
                     </div>
+                    <div class="col-md-5">
+                        <h4>HTML</h4>
+                        <table class="table table-striped table-bordered">
+                            <tr><td>Title</td><td>{{ $item['html']['title'] }}</td></tr>
+                            <tr><td>Type</td><td>{{ $item['html']['type'] }}</td></tr>
+                            <tr><td>Source</td><td>{{ $item['html']['source'] }}</td></tr>
+                            <tr><td>Image</td><td><a href="{{ $item['html']['file'] }}" target="_blank">
+                                {{ $item['html']['file'] }}</a></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-2">
+                        @if ($item['api']['title'] != $item['html']['title'])
+                            <i class="fa fa-4x fa-times text-danger"></i> <p>Title Does not match</p>
+                        @elseif ($item['api']['type'] != $item['html']['type'])
+                            <i class="fa fa-4x fa-times text-danger"></i> <p>Type Does not match</p>
+                        @elseif ($item['api']['source'] != $item['html']['source'])
+                            <i class="fa fa-4x fa-times text-danger"></i> <p>Source Does not match</p>
+                        @elseif ($item['api']['file'] != $item['html']['file'])
+                            <i class="fa fa-4x fa-times text-danger"></i> <p>File Does not match</p>
+                        @else
+                            <i class="fa fa-4x fa-check-square text-success"></i> <p>All Good</p>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
-        @endif
-    </div>
+        @endforeach
     @endif
 </div>
 @endsection

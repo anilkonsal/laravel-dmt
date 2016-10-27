@@ -112,13 +112,135 @@ class ItemService {
         return $this->itemRepository->getTotalAlbumCounts();
     }
 
-    public function doIngestQa(string $date)
+    public function doIngestQa($ies)
     {
         $pdsHandle = $this->_getPdsHandle();
 
+        if (!is_array($ies)) {
+            $iesArray = explode(',', $ies);
+        } else {
+            $iesArray = $ies;
+        }
+
+        $data = [];
+
+        if (empty($iesArray)) {
+            throw new Exception("Empty IEs array");
+        }
+
+        foreach ($iesArray as $ie) {
+            $xmlStr = $this->_fetchXmlFromApi($ie, $pdsHandle);
+            $data[$ie]['api'] = $this->_parseMETSXml($xmlStr);
+
+            $url = 'http://acmssearch.sl.nsw.gov.au/search/itemDetailPaged.cgi?itemID='.$data[$ie]['api']['identifier'];
+            $data[$ie]['html'] = $this->_parseHTML($url);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Function to parse the HTML URL and return array of information extracted
+     * @param  string $xmlStr [description]
+     * @return mixed Array of information or False otherwise
+     */
+    protected function _parseHTML(string $url)
+    {
+        include_once public_path().'/../thirdparty/simple_html_dom.php';
+
+        $html = file_get_html($url);
+
+        $pTags = $html->find('div.acms-content p');
+
+        $image = $html->find('div[id=tabs] div.image img');
+
+        $labels = $html->find('div.acms-content div.label');
+
+        $i = ($labels[1]->innertext == 'Creator') ? 4 : 3;
+
+        $file = $image[0]->src;
+        $nFile = str_replace(['_DAMt','t.jpg','\\'], ['_DAMx','h.jpg','/'], $file);
+
+        $arr = [
+            'title'         =>  strip_tags($pTags[0]->innertext),
+            'type'          =>  strip_tags($pTags[$i]->innertext),
+            'source'        =>  strip_tags($pTags[$i+1]->innertext),
+            'file'          =>  $nFile
+        ];
+
+        return $arr;
+    }
 
 
+    /**
+     * Function to parse the METS XML and return array of information extracted
+     * @param  string $xmlStr [description]
+     * @return mixed Array of information or False otherwise
+     */
+    protected function _parseMETSXml(string $xmlStr)
+    {
+        $xmlDoc = simplexml_load_string($xmlStr);
+        $xmlDoc->registerXPathNamespace("mets", "http://www.loc.gov/METS/");
+        $xmlDoc->registerXPathNamespace("dc", "http://purl.org/dc/elements/1.1/");
 
+        /*
+        Extract the identifier field
+         */
+        $identifier = $xmlDoc->xpath('//mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/dc:record/dc:identifier');
+        $strIdentifier = (string) $identifier[0][0];
+
+        /*
+        Extract the title field
+         */
+        $title = $xmlDoc->xpath('//mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/dc:record/dc:title');
+        $strTitle = (string) $title[0][0];
+
+        /*
+        Extract the Type field
+         */
+        $type = $xmlDoc->xpath('//mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/dc:record/dc:type');
+        $strType = (string) $type[0][0];
+
+        /*
+        Extract the source field
+         */
+        $source = $xmlDoc->xpath('//mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/dc:record/dc:source');
+        $strSource = (string) $source[3][0];
+
+        $strFileSource = (string) $source[2][0];
+
+        $arr = [
+            'identifier'    =>  $strIdentifier,
+            'title'         =>  $strTitle,
+            'type'          =>  $strType,
+            'source'        =>  $strSource,
+            'file'          =>  'http://acms.sl.nsw.gov.au/'. $strFileSource
+        ];
+
+        return $arr;
+    }
+
+    /**
+     * Function to fetcg the METs XML from SOAP API
+     * @param  string $ie  The ie number
+     * @param  string $pdsHandle The PDS Handle
+     * @return string  The XML of MET
+     */
+    protected function _fetchXmlFromApi(string $ie, string $pdsHandle) : string
+    {
+        $soapClient = new \SoapClient('http://digital.sl.nsw.gov.au/dpsws/repository/IEWebServices?wsdl');
+
+        $params = [
+            'pdsHandle' =>  $pdsHandle,
+            'iePid'     => $ie,
+            'flags'     =>  0
+        ];
+
+        $res = $soapClient->getIE($params);
+
+        $response = $res->getIE;
+
+        return $response;
     }
 
     /**
