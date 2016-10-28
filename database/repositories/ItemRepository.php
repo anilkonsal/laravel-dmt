@@ -273,6 +273,7 @@ class ItemRepository {
                         ->where('itemID', $itemID)
                         ->first();
 
+        $albumRow = null;
         if ($itemTextRow) {
             $alId = $itemTextRow->album_id;
 
@@ -344,16 +345,13 @@ class ItemRepository {
                             ->where('collectionID', $itemID)
                             ->get();
 
-
             foreach ($children as $child) {
 
                 $itemID = $child->itemID;
-
                 $nCounts = $this->getDetails($itemID, $debug, $itemizedCounts);
                 $mCounts = $nCounts['counts'];
 
                 $counts = $this->_array_sum_by_key($counts, $mCounts);
-
 
         }
 
@@ -510,7 +508,7 @@ class ItemRepository {
                         ->where('assetType', 'image')
                         ->where('itemType', 'Image')
                         ->where('status', '<>', 'rejected')
-                        ->orderBy(\DB::raw('cast(collection.itemIndex as unsigned)'))
+                        ->orderBy(\DB::raw('cast(collection.itemIndex as decimal(10,4))'))
                         ->get()
                         ->keyBy('itemID');
 
@@ -837,6 +835,8 @@ class ItemRepository {
         $acmsRow = Item::where('itemID', $itemId)->first();
 
         $digitalId = $acmsRow->fromKey;
+
+        dd($digitalId);
 
         $imageRow = \DB::table('item')
                     ->where('fromKey', $digitalId)
