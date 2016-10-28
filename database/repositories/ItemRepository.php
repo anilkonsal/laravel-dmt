@@ -593,14 +593,18 @@ class ItemRepository {
             $data[$itemId] = $this->_getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRows[$itemId], $collectionRows[$itemId]);
 
         }
+
+        //dd($data);
         /*
         If all the images are found for this album, mark this album as migrated
          */
         $key = array_search(false, $data);
+
         if ( $key === false) {
             $this->_markAsMigrated($albumAcmsRow);
         } else {
-            $this->_writeLog('<div style="background:red; color: white;">Files not found for Image with itemID: '. $key .'</div>');
+            $this->_writeLogTop('<div style="background:red; color: white;">Album SIP will not be generated as Files not found for Image with itemID: '. $key .'</div>');
+            return false;
         }
 
         return $data;
@@ -639,7 +643,7 @@ class ItemRepository {
                 }
             }
         }
-        
+
         $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
         $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
         $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
@@ -1409,6 +1413,16 @@ class ItemRepository {
             $string .= "<br />";
         }
         file_put_contents($this->_log, $string , FILE_APPEND);
+    }
+    protected function _writeLogTop($string)
+    {
+        if (substr($string, -1) != '>') {
+            $string .= "<br />";
+        }
+
+        $content = $string . file_get_contents($this->_log);
+
+        file_put_contents($this->_log, $content);
     }
 
     protected function _closeLog()
