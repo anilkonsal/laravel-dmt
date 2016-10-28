@@ -14,7 +14,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         Commands\TraversePath::class,
-        Commands\ImportMilleniumAlbums::class
+        Commands\ImportMilleniumAlbums::class,
+        Commands\GenerateAlbumSips::class,
     ];
 
     /**
