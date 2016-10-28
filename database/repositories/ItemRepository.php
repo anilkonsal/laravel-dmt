@@ -836,8 +836,6 @@ class ItemRepository {
 
         $digitalId = $acmsRow->fromKey;
 
-        dd($digitalId);
-
         $imageRow = \DB::table('item')
                     ->where('fromKey', $digitalId)
                     ->where('assetType', 'image')

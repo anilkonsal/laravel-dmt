@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         Commands\TraversePath::class,
         Commands\ImportMilleniumAlbums::class,
         Commands\GenerateAlbumSips::class,
+        Commands\GenerateStandaloneSips::class,
     ];
 
     /**
