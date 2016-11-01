@@ -112,7 +112,12 @@ class ItemService {
         return $this->itemRepository->getTotalAlbumCounts();
     }
 
-    public function doIngestQa($ies)
+    /**
+     * Function to do the ingest qa by accepting a list of IE ids
+     * @param  String Comma separated list of IEs to be QAd.
+     * @return Array An array containing data for parsed API values and HTML values
+     */
+    public function doIngestQa($ies) : array
     {
         $pdsHandle = $this->_getPdsHandle();
 
@@ -130,6 +135,7 @@ class ItemService {
 
         foreach ($iesArray as $ie) {
             $xmlStr = $this->_fetchXmlFromApi($ie, $pdsHandle);
+
             $data[$ie]['api'] = $this->_parseMETSXml($xmlStr);
 
             $url = 'http://acmssearch.sl.nsw.gov.au/search/itemDetailPaged.cgi?itemID='.$data[$ie]['api']['identifier'];
@@ -144,7 +150,7 @@ class ItemService {
      * @param  string $xmlStr [description]
      * @return mixed Array of information or False otherwise
      */
-    protected function _parseHTML(string $url)
+    protected function _parseHTML(string $url) : array
     {
         include_once public_path().'/../thirdparty/simple_html_dom.php';
 
@@ -152,24 +158,82 @@ class ItemService {
 
         $pTags = $html->find('div.acms-content p');
 
-        $image = $html->find('div[id=tabs] div.image img');
+
+        $albumLink = $html->find('div[id=tabs-1] a[class=albumtab]');
+
+        /*
+        If this is a standalone image
+         */
+        if(empty($albumLink)) {
+            $image = $html->find('div[id=tabs] div.image img');
+            $file = $image[0]->src;
+            $nFile = str_replace(['_DAMt','t.jpg','\\'], ['_DAMx','h.jpg','/'], $file);
+            $filesArray[] = $nFile;
+        } else {
+            /*
+            If this is an Album
+             */
+
+            $htmlStr = (string) $html;
+            preg_match_all('/"md_A":\s"[_A-Za-z0-9\/\\\]+"/', $htmlStr, $matchesA);
+            preg_match_all('/"md_E":\s"[_A-Za-z0-9\/\\\]+"/', $htmlStr, $matchesE);
+            preg_match_all('/"md_M":\s"[_A-Za-z0-9\/\\\]+"/', $htmlStr, $matchesM);
+            preg_match_all('/"md_F":\s"[_A-Za-z0-9\/\\\]+"/', $htmlStr, $matchesF);
+            preg_match_all('/"sort":\s"[_A-Za-z0-9\/\\\]+"/', $htmlStr, $matchesS);
+            $filesArray = [];
+
+
+            $newA = array_map(function($value){
+                $str = trim(explode(' ', $value)[1], '"');
+                return str_replace('\\\\', '/', $str);
+            }, $matchesA[0]);
+
+            $newE = array_map(function($value){
+                $str = trim(explode(' ', $value)[1], '"');
+                return $str;
+            }, $matchesE[0]);
+
+            $newM = array_map(function($value){
+                $str = trim(explode(' ', $value)[1], '"');
+                return $str;
+            }, $matchesM[0]);
+
+            $newF = array_map(function($value){
+                $str = trim(explode(' ', $value)[1], '"');
+                return $str;
+            }, $matchesF[0]);
+
+            $newS = array_map(function($value){
+                $str = trim(explode(' ', $value)[1], '"');
+                return $str;
+            }, $matchesS[0]);
+
+            if (!empty($newA)) {
+                foreach ($newA as $key => $value) {
+                    $nFile = 'http://acms.sl.nsw.gov.au/'.$value.'/'.$newE[$key].'/'.$newM[$key].'h.'.$newF[$key];
+                    $nFile = str_replace('DAMt', 'DAMx', $nFile);
+                    $filesArray[$newS[$key]] = $nFile;
+                }
+            }
+        }
+
+        ksort($filesArray);
+        $filesArray = array_values($filesArray);
 
         $labels = $html->find('div.acms-content div.label');
 
         $i = ($labels[1]->innertext == 'Creator') ? 4 : 3;
 
-        $file = $image[0]->src;
-        $nFile = str_replace(['_DAMt','t.jpg','\\'], ['_DAMx','h.jpg','/'], $file);
-
         $arr = [
             'title'         =>  strip_tags($pTags[0]->innertext),
             'type'          =>  strip_tags($pTags[$i]->innertext),
             'source'        =>  strip_tags($pTags[$i+1]->innertext),
-            'file'          =>  $nFile
+            'files'          =>  $filesArray
         ];
 
         return $arr;
     }
+
 
 
     /**
@@ -177,8 +241,9 @@ class ItemService {
      * @param  string $xmlStr [description]
      * @return mixed Array of information or False otherwise
      */
-    protected function _parseMETSXml(string $xmlStr)
+    protected function _parseMETSXml(string $xmlStr) : array
     {
+
         $xmlDoc = simplexml_load_string($xmlStr);
         $xmlDoc->registerXPathNamespace("mets", "http://www.loc.gov/METS/");
         $xmlDoc->registerXPathNamespace("dc", "http://purl.org/dc/elements/1.1/");
@@ -186,35 +251,55 @@ class ItemService {
         /*
         Extract the identifier field
          */
-        $identifier = $xmlDoc->xpath('//mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/dc:record/dc:identifier');
+        $identifier = $xmlDoc->xpath('//mets:mets/mets:dmdSec[contains(@ID,"ie-dmd")]/mets:mdWrap/mets:xmlData/dc:record/dc:identifier');
         $strIdentifier = (string) $identifier[0][0];
+
 
         /*
         Extract the title field
          */
-        $title = $xmlDoc->xpath('//mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/dc:record/dc:title');
+        $title = $xmlDoc->xpath('//mets:mets/mets:dmdSec[contains(@ID,"ie-dmd")]/mets:mdWrap/mets:xmlData/dc:record/dc:title');
         $strTitle = (string) $title[0][0];
 
         /*
-        Extract the Type field
+        Extract the Type field(s)
          */
-        $type = $xmlDoc->xpath('//mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/dc:record/dc:type');
-        $strType = (string) $type[0][0];
+        $type = $xmlDoc->xpath('//mets:mets/mets:dmdSec[contains(@ID,"ie-dmd")]/mets:mdWrap/mets:xmlData/dc:record/dc:type');
+        $t = [];
+        if (!empty($type)) {
+            foreach ($type as $value) {
+                $t[] = $value[0];
+            }
+        }
+        $strType = implode(', ', $t);
+
+        /*
+        Extract Image paths in the order mentioned in structMap part of the XML
+         */
+        $structMap = $xmlDoc->xpath('//mets:structMap/mets:div[contains(@LABEL,"SCREEN")]//mets:fptr');
+        $structArray = [];
+        if (!empty ($structMap)) {
+            foreach ($structMap as $struct) {
+                $fileId = (string) $struct->attributes()->FILEID;
+                $structArray[] = $fileId;
+                $fileArray[] = (string) $xmlDoc->xpath('//mets:dmdSec[contains(@ID,"'.$fileId.'-dmd")]//dc:description')[0];
+            }
+        }
 
         /*
         Extract the source field
          */
-        $source = $xmlDoc->xpath('//mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/dc:record/dc:source');
-        $strSource = (string) $source[3][0];
+        $source = $xmlDoc->xpath('//mets:mets/mets:dmdSec[contains(@ID,"ie-dmd")]/mets:mdWrap/mets:xmlData/dc:record/dc:source');
+        $strSource = (string) $source[0][0];
 
-        $strFileSource = (string) $source[2][0];
+
 
         $arr = [
             'identifier'    =>  $strIdentifier,
             'title'         =>  $strTitle,
             'type'          =>  $strType,
             'source'        =>  $strSource,
-            'file'          =>  'http://acms.sl.nsw.gov.au/'. $strFileSource
+            'files'          =>  $fileArray
         ];
 
         return $arr;

@@ -27,7 +27,7 @@
                                 @endif
                                 <br/>
                                 <button type="submit" class="btn btn-primary">
-                                    Fetch Report
+                                    Start QA
                                 </button>
                             </div>
                         </div>
@@ -38,11 +38,13 @@
     </div>
 
     @if(isset($data))
+    <?php $areImagesInOrder = true; ?>
         @foreach ($data as $ie => $item)
         <div class="panel panel-default">
-            <div class="panel-heading"><h3>{{ $ie }} - {{ $item['api']['identifier'] }}
-                <small><a href="http://acmssearch.sl.nsw.gov.au/search/itemDetailPaged.cgi?itemID={{ $item['api']['identifier'] }}">View</a></small>
-            </h3>
+            <div class="panel-heading">
+                <h3>{{ $ie }} - {{ $item['api']['identifier'] }}
+                    <small><a href="http://acmssearch.sl.nsw.gov.au/search/itemDetailPaged.cgi?itemID={{ $item['api']['identifier'] }}" target="_blank">View</a></small>
+                </h3>
             </div>
             <div class="panel-body">
                 <div class="row">
@@ -52,8 +54,20 @@
                             <tr><td>Title</td><td>{{ $item['api']['title'] }}</td></tr>
                             <tr><td>Type</td><td>{{ $item['api']['type'] }}</td></tr>
                             <tr><td>Source</td><td>{{ $item['api']['source'] }}</td></tr>
-                            <tr><td>Image</td><td><a href="{{ $item['api']['file'] }}" target="_blank">
-                                {{ $item['api']['file'] }}</a></td>
+                            <tr>
+                                <td>Image(s)</td>
+                                <td>
+                                    @if (!empty($item['api']['files']))
+                                        <ol>
+                                            @foreach ($item['api']['files'] as $key => $file)
+                                                <li><a href="{{ $file }}" target="_blank">{{ $file }}</a></li>
+                                                @if ($areImagesInOrder && ($file != $item['html']['files'][$key]))
+                                                    <?php $areImagesInOrder = false; ?>
+                                                @endif
+                                            @endforeach
+                                        </ol>
+                                    @endif
+                                </td>
                             </tr>
                         </table>
                     </div>
@@ -63,8 +77,16 @@
                             <tr><td>Title</td><td>{{ $item['html']['title'] }}</td></tr>
                             <tr><td>Type</td><td>{{ $item['html']['type'] }}</td></tr>
                             <tr><td>Source</td><td>{{ $item['html']['source'] }}</td></tr>
-                            <tr><td>Image</td><td><a href="{{ $item['html']['file'] }}" target="_blank">
-                                {{ $item['html']['file'] }}</a></td>
+                            <tr><td>Image(s)</td>
+                                <td>
+                                    @if (!empty($item['html']['files']))
+                                        <ol>
+                                            @foreach ($item['html']['files'] as $file)
+                                                <li><a href="{{ $file }}" target="_blank">{{ $file }}</a></li>
+                                            @endforeach
+                                        </ol>
+                                    @endif
+                                </td>
                             </tr>
                         </table>
                     </div>
@@ -75,8 +97,8 @@
                             <i class="fa fa-4x fa-times text-danger"></i> <p>Type Does not match</p>
                         @elseif ($item['api']['source'] != $item['html']['source'])
                             <i class="fa fa-4x fa-times text-danger"></i> <p>Source Does not match</p>
-                        @elseif ($item['api']['file'] != $item['html']['file'])
-                            <i class="fa fa-4x fa-times text-danger"></i> <p>File Does not match</p>
+                        @elseif ($areImagesInOrder === false)
+                            <i class="fa fa-4x fa-exclamation-circle text-danger" aria-hidden="true"></i> <p>Images not in order!</p>
                         @else
                             <i class="fa fa-4x fa-check-square text-success"></i> <p>All Good</p>
                         @endif
