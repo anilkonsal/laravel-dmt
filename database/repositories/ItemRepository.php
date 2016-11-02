@@ -557,6 +557,15 @@ class ItemRepository {
             return false;
         }
 
+
+        /*
+        In some rare cases, the suppress field is empty, in those cases, we just skip this album
+         */
+        if (empty($albumAcmsRow->supress)) {
+            $this->_writeLog('<div style="background:red; color:white">Skipping this album as Supress Field is empty!</div>');
+            return false;
+        }
+
         /*
         Loop through all the images belonging to this album and get the data back
          */
@@ -625,6 +634,8 @@ class ItemRepository {
         $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
         $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
         $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
+
+
 
         $artist = '';
 
