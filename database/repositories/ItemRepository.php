@@ -994,6 +994,9 @@ class ItemRepository {
                 $data['rep3_amd_rights'] = 'AR_EVERYONE';
             } elseif ($supress == 'Yes') {
                 $data['rep3_amd_rights'] = '1062';
+            } elseif (empty($supress)) {
+                    $this->_writeLog('<div style="background:red; color:white">Skipping this Image as Supress Field is empty!</div>');
+                    return false;
             }
 
             /*
