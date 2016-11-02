@@ -238,6 +238,7 @@ class SipService {
         // dd($itemizedCounts);
 
         foreach ($itemizedCounts as $childItemId => $counts) {
+            echo "Item ID: $childItemId\n";
             if ($counts['albumsCount'] > 0) {
                 $result = $this->generateAlbumItemSip($childItemId, $logFile, $generateAlbumSip);
                 if ($result !== false) {

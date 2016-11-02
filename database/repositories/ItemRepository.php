@@ -495,6 +495,8 @@ class ItemRepository {
         $albumItemTextRow = \DB::table('itemtext')
                         ->where('itemID', $albumId)->first();
 
+        $supress = $itemTextRow->cb;
+
         $imageRows = \DB::table('item')
                         ->join('collection', 'item.itemID', '=', 'collection.itemID')
                         ->whereIn('item.itemID', function($query) use ($albumId) {
@@ -561,7 +563,7 @@ class ItemRepository {
         /*
         In some rare cases, the suppress field is empty, in those cases, we just skip this album
          */
-        if (empty($albumAcmsRow->supress)) {
+        if (empty($supress)) {
             $this->_writeLog('<div style="background:red; color:white">Skipping this album as Supress Field is empty!</div>');
             return false;
         }
