@@ -1249,6 +1249,8 @@ class ItemRepository {
                     $newExtension = 'jpg';
                 } elseif (in_array($extension, ['jpg', 'JPG'])) {
                     $newExtension = 'tif';
+                } else {
+                    $newExtension = $extension;
                 }
                 $newFilePath = $dirName . '/'. $fileName .'.'.$newExtension;
 
