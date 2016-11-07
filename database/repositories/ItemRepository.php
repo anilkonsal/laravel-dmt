@@ -827,6 +827,17 @@ class ItemRepository {
         return $data;
     }
 
+    public function getAllPDFrecords()
+    {
+        $acmsRows = \DB::table('item')
+                    ->where('fromType', 'pdf')
+                    ->where('assetType', 'acms')
+                    ->where('itemType', 'collection')
+                    ->where('status','active')
+                    ->get();
+        return $acmsRows;
+    }
+
 
 
 
@@ -1007,8 +1018,10 @@ class ItemRepository {
             $masterYear = substr($imageRow->masterRoot, -4);
             $comasterYear = substr($imageRow->fromRoot, -4);
 
-            $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $masterYear . "/" . $imageRow->masterFolder ."/" .  $imageRow->masterKey . "u." . $imageRow->fromType;
-            $data['fid1_1_amd_fileOriginalName'] = $imageRow->masterKey . "u." . $imageRow->fromType;
+            $masterSuffix = ($imageRow->fromType != 'pdf') ? 'u' : '';
+
+            $data['fid1_1_amd_fileOriginalPath'] = "/permanent_storage/legacy/master/" . $masterYear . "/" . $imageRow->masterFolder ."/" .  $imageRow->masterKey . $masterSuffix . "." . $imageRow->fromType;
+            $data['fid1_1_amd_fileOriginalName'] = $imageRow->masterKey . $masterSuffix . "." . $imageRow->fromType;
             $data['fid1_1_amd_label'] = $itemTextRow->ab;
             $data['fid1_1_amd_groupID'] = $imageRow->itemKey;
 
@@ -1032,11 +1045,20 @@ class ItemRepository {
 
              $this->_writeLog('<h4>Checking files on Permanent Storage.</h4>');
 
+
              $result1 = $this->_doesFileExistsOnPermStorage($data['fid1_1_amd_fileOriginalPath'], $itemId, 'm', 's');
              $result2 = $this->_doesFileExistsOnPermStorage($data['fid1_2_amd_fileOriginalPath'], $itemId, 'c', 's');
              $result3 = $this->_doesFileExistsOnPermStorage($data['fid1_3_amd_fileOriginalPath'], $itemId, 'o', 's');
 
-             $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
+
+             if ($imageRow->fromType != 'pdf') {
+                $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
+                $data['rep1_amd_rights'] = $data['rep2_amd_rights'] = '1062';
+            } else {
+                $doFilesExistInPermStorage = $result1['found'] || $result2['found'] || $result3['found'];
+                $data['rep2_amd_rights'] = $data['rep1_amd_rights'] = 'AR_EVERYONE';
+            }
+
 
              if ($doFilesExistInPermStorage) {
 
@@ -1048,9 +1070,9 @@ class ItemRepository {
                  $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
                  $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
 
-                 $data['fid1_1_amd_fileOriginalName'] = $basename1;
-                 $data['fid1_2_amd_fileOriginalName'] = $basename2;
-                 $data['fid1_3_amd_fileOriginalName'] = $basename3;
+                 $data['fid1_1_amd_fileOriginalName'] = $result1['found'] ? $basename1 : '';
+                 $data['fid1_2_amd_fileOriginalName'] = $result2['found'] ? $basename2 : '';
+                 $data['fid1_3_amd_fileOriginalName'] = $result3['found'] ? $basename3 : '';
 
                  $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
                  $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
@@ -1065,6 +1087,8 @@ class ItemRepository {
                      $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $basename3;
                      $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $basename3;
                  }
+
+
 
              }
 
@@ -1099,6 +1123,8 @@ class ItemRepository {
              $this->_writeLog('<div style="background-color:#15a545; color: #fff">SIP generated for item id: '. $itemId.'</div>');
          }
          $this->_closeLog();
+
+
 
         return $data;
     }
@@ -1228,7 +1254,7 @@ class ItemRepository {
                  for the co master
                  */
                  if ($representation === 'm') {
-                     $newFilePath = $dirName .'/'. substr($fileName, 0, -1) . '_m' .'.'.$extension;
+                     $newFilePath = $dirName .'/'. $fileName . '_m' .'.'.$extension;
                  } elseif ($representation == 'c') {
                      $newFilePath = $dirName .'/'. $fileName . '_c' .'.'.$extension;
                  }
@@ -1340,8 +1366,11 @@ class ItemRepository {
 
         $yfk = '/' . $year .'/'. $imageItemRow->masterFolder . '/' . $imageItemRow->masterKey;
 
-        $masterPath = '/permanent_storage/legacy/master'. $yfk .'u.tif';
-        $comasterPath = '/permanent_storage/legacy/comaster'. $yfk .'.tif';
+        $masterSuffix = $imageItemRow->fromType != 'pdf' ? 'u' : '';
+        $extension = $imageItemRow->fromType != 'pdf' ? 'tif' : 'pdf';
+
+        $masterPath = '/permanent_storage/legacy/master'. $yfk . $masterSuffix .'.'. $extension;
+        $comasterPath = '/permanent_storage/legacy/comaster'. $yfk .'.'. $extension;
         $highresPath = '/permanent_storage/legacy/derivatives/highres/image/'. $imageItemRow->wpath . '/'. $imageItemRow->masterKey . 'h.jpg';
         $stdresPath = '/permanent_storage/legacy/derivatives/screenres/image/'. $imageItemRow->wpath . '/'. $imageItemRow->masterKey . 'r.jpg';
 

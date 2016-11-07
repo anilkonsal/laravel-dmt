@@ -32,7 +32,7 @@ class SipService {
             'ie_dmd_type'           => $data['ie_dmd_type'],
             'ie_dmd_accessRights'   => $data['ie_dmd_accessRights'],
             'ie_dmd_date'           => $data['ie_dmd_date'],
-            'ie_dmd_isFormatOf'      => $data['ie_dmd_isFormatOf'],
+            'ie_dmd_isFormatOf'     => $data['ie_dmd_isFormatOf'],
 
             'fid1_1_dmd_title'      => $data['fid1_1_dmd_title'],
             'fid1_1_dmd_source'     => $data['fid1_1_dmd_source'],
@@ -78,6 +78,8 @@ class SipService {
             'rep2_1_label'                  => $data['rep2_1_label'],
             'rep3_1_label'                  => $data['rep3_1_label'],
 
+            'rep1_amd_rights'               => $data['rep1_amd_rights'],
+            'rep2_amd_rights'               => $data['rep2_amd_rights'],
             'rep3_amd_rights'               => $data['rep3_amd_rights'],
 
         ]);
@@ -235,7 +237,7 @@ class SipService {
             unlink($logFile);
         }
 
-        
+
 
         foreach ($itemizedCounts as $childItemId => $counts) {
             if ($counts['albumsCount'] > 0) {
@@ -285,6 +287,34 @@ class SipService {
     }
 
     /**
+     * Function to generate sip of records with PDFs as master or comanster
+     * @param  string $logFile Path of the log file to be generated
+     * @return mixed   Path of zip file on success or false otherwise
+     */
+    public function generatePDFSip($logFile, $forceGeneration = false)
+    {
+        $acmsRows = $this->_itemRepository->getAllPDFrecords();
+        $folders = [];
+
+        if (file_exists($logFile)) {
+            unlink($logFile);
+        }
+
+        foreach ($acmsRows as $row) {
+            $result = $this->generateItemSip($row->itemID, $logFile, $forceGeneration);
+            if ($result !== false) {
+                $folders[] = $result;
+            }
+        }
+
+        if (count($folders) > 0) {
+            return $this->_generateZip('PDFs', $folders);
+        }
+
+        return false;
+    }
+
+    /**
      * Function to generate the required folder structure for the Sips
      * @param  integer $itemId
      * @return array Paths of the Main folder;
@@ -306,7 +336,7 @@ class SipService {
 
     /**
      * Function to generate the Zip file
-     * @param  Integer $itemId
+     * @param  String $itemId
      * @param  Array  $folders Folders to be zipped
      * @return string Zip file URL
      */

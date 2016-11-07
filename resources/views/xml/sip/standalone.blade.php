@@ -1,3 +1,4 @@
+<?php $x=1; ?>
 <mets:mets xmlns:mets="http://www.loc.gov/METS/">
 
   <mets:dmdSec ID="ie-dmd">
@@ -21,8 +22,8 @@
       </mets:xmlData>
     </mets:mdWrap>
   </mets:dmdSec>
-
-  <mets:dmdSec ID="fid1-1-dmd">
+  @if(!empty($fid1_1_amd_fileOriginalName))
+  <mets:dmdSec ID="fid1-{{ $x }}-dmd">
     <mets:mdWrap MDTYPE="DC">
       <mets:xmlData>
         <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3">
@@ -37,8 +38,11 @@
       </mets:xmlData>
     </mets:mdWrap>
   </mets:dmdSec>
+  <?php $x++ ?>
+ @endif
 
-  <mets:dmdSec ID="fid1-2-dmd">
+ @if(!empty($fid1_2_amd_fileOriginalName))
+  <mets:dmdSec ID="fid1-{{ $x }}-dmd">
     <mets:mdWrap MDTYPE="DC">
       <mets:xmlData>
         <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3">
@@ -53,8 +57,10 @@
       </mets:xmlData>
     </mets:mdWrap>
   </mets:dmdSec>
-
-  <mets:dmdSec ID="fid1-3-dmd">
+  <?php $x++ ?>
+@endif
+@if(!empty($fid1_3_amd_fileOriginalName))
+  <mets:dmdSec ID="fid1-{{ $x }}-dmd">
     <mets:mdWrap MDTYPE="DC">
       <mets:xmlData>
         <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3">
@@ -69,7 +75,7 @@
       </mets:xmlData>
     </mets:mdWrap>
   </mets:dmdSec>
-
+  @endif
   <mets:amdSec ID="ie-amd">
     <mets:techMD ID="ie-amd-tech">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
@@ -106,9 +112,10 @@
       </mets:mdWrap>
     </mets:digiprovMD>
   </mets:amdSec>
-
-  <mets:amdSec ID="rep1-amd">
-    <mets:techMD ID="rep1-amd-tech">
+  <?php $x=1; ?>
+  @if(!empty($fid1_1_amd_fileOriginalName))
+  <mets:amdSec ID="rep{{ $x }}-amd">
+    <mets:techMD ID="rep{{ $x }}-amd-tech">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
@@ -124,27 +131,27 @@
         </mets:xmlData>
       </mets:mdWrap>
     </mets:techMD>
-    <mets:rightsMD ID="rep1-amd-rights">
+    <mets:rightsMD ID="rep{{ $x }}-amd-rights">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
             <section id="accessRightsPolicy">
               <record>
-                <key id="policyId">1062</key>
+                <key id="policyId">{{ $rep1_amd_rights }}</key>
               </record>
             </section>
           </dnx>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:rightsMD>
-    <mets:sourceMD ID="rep1-amd-source">
+    <mets:sourceMD ID="rep{{ $x }}-amd-source">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:sourceMD>
-    <mets:digiprovMD ID="rep1-amd-digiprov">
+    <mets:digiprovMD ID="rep{{ $x }}-amd-digiprov">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
@@ -152,9 +159,11 @@
       </mets:mdWrap>
     </mets:digiprovMD>
   </mets:amdSec>
-
-  <mets:amdSec ID="rep2-amd">
-    <mets:techMD ID="rep2-amd-tech">
+  <?php $x++; ?>
+@endif
+@if(!empty($fid1_2_amd_fileOriginalName))
+  <mets:amdSec ID="rep{{ $x }}-amd">
+    <mets:techMD ID="rep{{ $x }}-amd-tech">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
@@ -170,27 +179,27 @@
         </mets:xmlData>
       </mets:mdWrap>
     </mets:techMD>
-    <mets:rightsMD ID="rep2-amd-rights">
+    <mets:rightsMD ID="rep{{ $x }}-amd-rights">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
             <section id="accessRightsPolicy">
               <record>
-                <key id="policyId">1062</key>
+                <key id="policyId">{{ $rep2_amd_rights }}</key>
               </record>
             </section>
           </dnx>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:rightsMD>
-    <mets:sourceMD ID="rep2-amd-source">
+    <mets:sourceMD ID="rep{{ $x }}-amd-source">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:sourceMD>
-    <mets:digiprovMD ID="rep2-amd-digiprov">
+    <mets:digiprovMD ID="rep{{ $x }}-amd-digiprov">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
@@ -198,9 +207,11 @@
       </mets:mdWrap>
     </mets:digiprovMD>
   </mets:amdSec>
-
-  <mets:amdSec ID="rep3-amd">
-    <mets:techMD ID="rep3-amd-tech">
+  <?php $x++;?>
+  @endif
+  @if(!empty($fid1_3_amd_fileOriginalName))
+  <mets:amdSec ID="rep{{ $x }}-amd">
+    <mets:techMD ID="rep{{ $x }}-amd-tech">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
@@ -216,7 +227,7 @@
         </mets:xmlData>
       </mets:mdWrap>
     </mets:techMD>
-    <mets:rightsMD ID="rep3-amd-rights">
+    <mets:rightsMD ID="rep{{ $x }}-amd-rights">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
@@ -229,14 +240,14 @@
         </mets:xmlData>
       </mets:mdWrap>
     </mets:rightsMD>
-    <mets:sourceMD ID="rep3-amd-source">
+    <mets:sourceMD ID="rep{{ $x }}-amd-source">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:sourceMD>
-    <mets:digiprovMD ID="rep3-amd-digiprov">
+    <mets:digiprovMD ID="rep{{ $x }}-amd-digiprov">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
@@ -244,9 +255,11 @@
       </mets:mdWrap>
     </mets:digiprovMD>
   </mets:amdSec>
-
-  <mets:amdSec ID="fid1-1-amd">
-    <mets:techMD ID="fid1-1-amd-tech">
+  @endif
+  <?php $x = 1; ?>
+  @if(!empty($fid1_1_amd_fileOriginalName))
+  <mets:amdSec ID="fid1-{{ $x }}-amd">
+    <mets:techMD ID="fid1-{{ $x }}-amd-tech">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
@@ -266,21 +279,21 @@
         </mets:xmlData>
       </mets:mdWrap>
     </mets:techMD>
-    <mets:rightsMD ID="fid1-1-amd-rights">
+    <mets:rightsMD ID="fid1-{{ $x }}-amd-rights">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:rightsMD>
-    <mets:sourceMD ID="fid1-1-amd-source">
+    <mets:sourceMD ID="fid1-{{ $x }}-amd-source">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:sourceMD>
-    <mets:digiprovMD ID="fid1-1-amd-digiprov">
+    <mets:digiprovMD ID="fid1-{{ $x }}-amd-digiprov">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
@@ -288,9 +301,11 @@
       </mets:mdWrap>
     </mets:digiprovMD>
   </mets:amdSec>
-
-  <mets:amdSec ID="fid1-2-amd">
-    <mets:techMD ID="fid1-2-amd-tech">
+  <?php $x++; ?>
+  @endif
+  @if(!empty($fid1_2_amd_fileOriginalName))
+  <mets:amdSec ID="fid1-{{ $x }}-amd">
+    <mets:techMD ID="fid1-{{ $x }}-amd-tech">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
@@ -310,21 +325,21 @@
         </mets:xmlData>
       </mets:mdWrap>
     </mets:techMD>
-    <mets:rightsMD ID="fid1-2-amd-rights">
+    <mets:rightsMD ID="fid1-{{ $x }}-amd-rights">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:rightsMD>
-    <mets:sourceMD ID="fid1-2-amd-source">
+    <mets:sourceMD ID="fid1-{{ $x }}-amd-source">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:sourceMD>
-    <mets:digiprovMD ID="fid1-2-amd-digiprov">
+    <mets:digiprovMD ID="fid1-{{ $x }}-amd-digiprov">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
@@ -332,9 +347,11 @@
       </mets:mdWrap>
     </mets:digiprovMD>
   </mets:amdSec>
-
-  <mets:amdSec ID="fid1-3-amd">
-    <mets:techMD ID="fid1-3-amd-tech">
+  <?php $x++; ?>
+  @endif
+  @if(!empty($fid1_3_amd_fileOriginalName))
+  <mets:amdSec ID="fid1-{{ $x }}-amd">
+    <mets:techMD ID="fid1-{{ $x }}-amd-tech">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
@@ -354,21 +371,21 @@
         </mets:xmlData>
       </mets:mdWrap>
     </mets:techMD>
-    <mets:rightsMD ID="fid1-3-amd-rights">
+    <mets:rightsMD ID="fid1-{{ $x }}-amd-rights">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:rightsMD>
-    <mets:sourceMD ID="fid1-3-amd-source">
+    <mets:sourceMD ID="fid1-{{ $x }}-amd-source">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
         </mets:xmlData>
       </mets:mdWrap>
     </mets:sourceMD>
-    <mets:digiprovMD ID="fid1-3-amd-digiprov">
+    <mets:digiprovMD ID="fid1-{{ $x }}-amd-digiprov">
       <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
         <mets:xmlData>
           <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
@@ -376,26 +393,36 @@
       </mets:mdWrap>
     </mets:digiprovMD>
   </mets:amdSec>
-
+  @endif
+  <?php $x = 1; ?>
   <mets:fileSec>
-    <mets:fileGrp ID="rep1" ADMID="rep1-amd">
-      <mets:file ID="fid1-1" DMDID="fid1-1-dmd" ADMID="fid1-1-amd">
+    @if(!empty($fid1_1_amd_fileOriginalName))
+    <mets:fileGrp ID="rep{{ $x }}" ADMID="rep{{ $x }}-amd">
+      <mets:file ID="fid1-{{ $x }}" DMDID="fid1-{{ $x }}-dmd" ADMID="fid1-{{ $x }}-amd">
         <mets:FLocat LOCTYPE="URL" xlin:href="{{ $rep1_amd_url }}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
       </mets:file>
     </mets:fileGrp>
-    <mets:fileGrp ID="rep2" ADMID="rep2-amd">
-      <mets:file ID="fid1-2" DMDID="fid1-2-dmd" ADMID="fid1-2-amd">
+    <?php $x++; ?>
+    @endif
+    @if(!empty($fid1_2_amd_fileOriginalName))
+    <mets:fileGrp ID="rep{{ $x }}" ADMID="rep{{ $x }}-amd">
+      <mets:file ID="fid1-{{ $x }}" DMDID="fid1-{{ $x }}-dmd" ADMID="fid1-{{ $x }}-amd">
         <mets:FLocat LOCTYPE="URL" xlin:href="{{ $rep2_amd_url }}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
       </mets:file>
     </mets:fileGrp>
-	<mets:fileGrp ID="rep3" ADMID="rep3-amd">
-      <mets:file ID="fid1-3" DMDID="fid1-3-dmd" ADMID="fid1-3-amd">
+    <?php $x++; ?>
+    @endif
+    @if(!empty($fid1_3_amd_fileOriginalName))
+	<mets:fileGrp ID="rep{{ $x }}" ADMID="rep{{ $x }}-amd">
+      <mets:file ID="fid1-{{ $x }}" DMDID="fid1-{{ $x }}-dmd" ADMID="fid1-{{ $x }}-amd">
         <mets:FLocat LOCTYPE="URL" xlin:href="{{ $rep3_amd_url }}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
       </mets:file>
     </mets:fileGrp>
+    @endif
   </mets:fileSec>
-
-  <mets:structMap ID="rep1-1" TYPE="PHYSICAL">
+  <?php $x = 1; ?>
+  @if(!empty($fid1_1_amd_fileOriginalName))
+  <mets:structMap ID="rep{{ $x }}-1" TYPE="PHYSICAL">
     <mets:div LABEL="PRESERVATION MASTER">
       <mets:div LABEL="Table of Contents">
         <mets:div LABEL="{{ $rep1_1_label }}" TYPE="FILE">
@@ -404,25 +431,29 @@
       </mets:div>
     </mets:div>
   </mets:structMap>
-
-  <mets:structMap ID="rep2-1" TYPE="PHYSICAL">
+  <?php $x++; ?>
+  @endif
+  @if(!empty($fid1_2_amd_fileOriginalName))
+  <mets:structMap ID="rep{{ $x }}-1" TYPE="PHYSICAL">
     <mets:div LABEL="COMASTER">
       <mets:div LABEL="Table of Contents">
         <mets:div LABEL="{{ $rep2_1_label }}" TYPE="FILE">
-          <mets:fptr FILEID="fid1-2"/>
+          <mets:fptr FILEID="fid1-{{ $x }}"/>
         </mets:div>
       </mets:div>
     </mets:div>
   </mets:structMap>
-
-   <mets:structMap ID="rep3-1" TYPE="PHYSICAL">
+  <?php $x++; ?>
+  @endif
+  @if(!empty($fid1_3_amd_fileOriginalName))
+   <mets:structMap ID="rep{{ $x }}-1" TYPE="PHYSICAL">
     <mets:div LABEL="SCREEN">
       <mets:div LABEL="Table of Contents">
         <mets:div LABEL="{{ $rep3_1_label }}" TYPE="FILE">
-          <mets:fptr FILEID="fid1-3"/>
+          <mets:fptr FILEID="fid1-{{ $x }}"/>
         </mets:div>
       </mets:div>
     </mets:div>
   </mets:structMap>
-
+  @endif
 </mets:mets>

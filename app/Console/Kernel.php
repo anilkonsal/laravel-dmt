@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
         Commands\ImportMilleniumAlbums::class,
         Commands\GenerateAlbumSips::class,
         Commands\GenerateStandaloneSips::class,
+        Commands\GeneratePDFSips::class,
     ];
 
     /**
