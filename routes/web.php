@@ -39,6 +39,14 @@ Route::group(['prefix'  =>  'sip', 'middleware' =>  'auth'], function(){
         'as'    =>  'sip_generate_album',
         'uses'  =>  'SipController@generateAlbum'
     ]);
+    Route::get('/generate-standalone-pdf', [
+        'as'    =>  'sip_generate_standalone_pdf',
+        'uses'  =>  'SipController@generateStandAlonePdf'
+    ]);
+    Route::post('/generate-standalone-pdf', [
+        'as'    =>  'sip_generate_standalone_pdf',
+        'uses'  =>  'SipController@generateStandAlonePdf'
+    ]);
 });
 
 
