@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         Commands\GenerateAlbumSips::class,
         Commands\GenerateStandaloneSips::class,
         Commands\GeneratePDFSips::class,
+        Commands\GenerateRootAcmsCSV::class,
     ];
 
     /**

@@ -13,6 +13,44 @@ class SipService {
         $this->_itemRepository = $itemRepository;
     }
 
+    public function generateRootAcmsCSVs(int $chunkSize)
+    {
+        $count = $this->_itemRepository->getRootLevelAcmsRowsCount();
+
+        $chunks = (int) ceil($count / $chunkSize);
+
+        $limit = $chunkSize;
+
+        $csvPath = public_path() .'/downloads/csvs';
+
+        if (!file_exists($csvPath)) {
+            mkdir($csvPath);
+        }
+
+        for ($i=0; $i<=$chunks; $i++) {
+            $offset = ($chunkSize * $i) + ((!$i) ? 0 : 1) ;
+
+            $rows = $this->_itemRepository->getRootLevelAcmsRows($offset, $limit);
+
+            $csvFilePath = $csvPath . DIRECTORY_SEPARATOR .'bulk'.($i+1).'-'.$offset.'.csv';
+
+            $this->_writeAcmsRowsCSV($rows, $csvFilePath);
+        }
+        return $csvPath;
+
+    }
+
+    protected function _writeAcmsRowsCSV($rows, $path)
+    {
+        $fp = fopen($path, 'w');
+
+        foreach ($rows as $row) {
+            fputcsv($fp, [$row]);
+        }
+        fclose($fp);
+
+    }
+
 
     public function generateItemSip($itemId, $logFile, $forceGeneration = false)
     {
@@ -309,6 +347,33 @@ class SipService {
 
         if (count($folders) > 0) {
             return $this->_generateZip('PDFs', $folders);
+        }
+
+        return false;
+    }
+    /**
+     * Function to generate sip of records by reading ItemIds from CSV file
+     * @param  string $logFile Path of the log file to be generated
+     * @return mixed   Path of zip file on success or false otherwise
+     */
+    public function generateCSVSips($csvPath, $logFile, $forceGeneration = false)
+    {
+        $rows = $this->_itemRepository->getAllPDFrecords();
+        $folders = [];
+
+        if (file_exists($logFile)) {
+            unlink($logFile);
+        }
+
+        foreach ($acmsRows as $row) {
+            $result = $this->generateItemSip($itemId, $logFile, $forceGeneration);
+            if ($result !== false) {
+                $folders[] = $result;
+            }
+        }
+
+        if (count($folders) > 0) {
+            return $this->_generateZip('Sips-CSVs', $folders);
         }
 
         return false;

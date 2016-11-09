@@ -194,6 +194,45 @@ class ItemRepository {
     }
 
     /**
+     * Function to fetch the Root Level ACMS Rows count
+     * @return Integer          Count of all the root level ACMS rows
+     */
+    public function getRootLevelAcmsRowsCount() : int
+    {
+        $count = \DB::table('item')
+                    ->whereNotIn('itemID', function($query) {
+                        $query->select('collection.itemID')
+                                ->from('collection');
+                        })
+                    ->where('assetType', 'acms')
+                    ->where('itemType', 'collection')
+                    ->count();
+
+        return $count;
+    }
+    /**
+     * Function to fetch the Root Level ACMS Rows
+     * @param  integer $offset Starting offset
+     * @param  integer $limit  Limit
+     * @return [type]          [description]
+     */
+    public function getRootLevelAcmsRows(int $offset = 0, int $limit = 1000)
+    {
+        $rows = \DB::table('item')
+                    ->whereNotIn('itemID', function($query) {
+                        $query->select('collection.itemID')
+                                ->from('collection');
+                        })
+                    ->where('assetType', 'acms')
+                    ->where('itemType', 'collection')
+                    ->offset($offset)
+                    ->limit($limit)                    
+                    ->pluck('itemID');
+        return $rows;
+
+    }
+
+    /**
      * Function to get the Albums count
      * @return integer The count
      */
@@ -1478,5 +1517,7 @@ class ItemRepository {
         $html = $html . (file_get_contents($this->_log)) .$endHtml;
         file_put_contents($this->_log, $html);
     }
+
+
 
 }
