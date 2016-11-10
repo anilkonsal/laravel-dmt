@@ -294,7 +294,7 @@ class SipService {
     }
 
     /**
-     * Function to generate sip f standalone images
+     * Function to generate sip of standalone images
      * @param  integer $itemId  ACMS row id for the item
      * @param  string $logFile Path of the log file to be generated
      * @return mixed   Path of zip file on success or false otherwise
@@ -307,6 +307,8 @@ class SipService {
         if (file_exists($logFile)) {
             unlink($logFile);
         }
+
+        // print_r($itemizedCounts);
 
         foreach ($itemizedCounts as $childItemId => $counts) {
             if ($counts['standaloneImagesCount'] > 0) {
@@ -351,33 +353,7 @@ class SipService {
 
         return false;
     }
-    /**
-     * Function to generate sip of records by reading ItemIds from CSV file
-     * @param  string $logFile Path of the log file to be generated
-     * @return mixed   Path of zip file on success or false otherwise
-     */
-    public function generateCSVSips($csvPath, $logFile, $forceGeneration = false)
-    {
-        $rows = $this->_itemRepository->getAllPDFrecords();
-        $folders = [];
 
-        if (file_exists($logFile)) {
-            unlink($logFile);
-        }
-
-        foreach ($acmsRows as $row) {
-            $result = $this->generateItemSip($itemId, $logFile, $forceGeneration);
-            if ($result !== false) {
-                $folders[] = $result;
-            }
-        }
-
-        if (count($folders) > 0) {
-            return $this->_generateZip('Sips-CSVs', $folders);
-        }
-
-        return false;
-    }
 
     /**
      * Function to generate the required folder structure for the Sips
@@ -434,9 +410,46 @@ class SipService {
                   $zip->addFromString($baseSource.'/'.str_replace($source . '/', '', $file), file_get_contents($file));
                }
            }
+           $this->_deleteRecursive($source);
         }
-        $zip->close();
+        try {
+            $zip->close();
+
+
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        }
+
         return $zipFileUrl;
+    }
+
+    /**
+     * Delete a file/recursively delete a directory
+     *
+     * NOTE: Be very careful with the path you pass to this!
+     *
+     * @param string $path The path to the file/directory to delete
+     * @return void
+     */
+    protected function _deleteRecursive($path)
+    {
+        if (is_dir($path)) {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST
+            );
+
+            foreach ($iterator as $file) {
+                if ($file->isDir()) {
+                    rmdir($file->getPathname());
+                } else {
+                    unlink($file->getPathname());
+                }
+            }
+            rmdir($path);
+        } else {
+            unlink($path);
+        }
     }
 
     /**

@@ -12,7 +12,7 @@ class GenerateAlbumSips extends Command
      *
      * @var string
      */
-    protected $signature = 'generate-sip:album';
+    protected $signature = 'generate-sip:album {--item-id=} {--force-generation=}';
 
     /**
      * The console command description.
@@ -38,9 +38,15 @@ class GenerateAlbumSips extends Command
      */
     public function handle(SipService $sipService)
     {
-        $itemId = $this->ask('What is the item ID?');
+        $itemId = $this->option('item-id');
+        if (empty($itemId)) {
+            $itemId = $this->ask('What is the item ID?');
+        }
 
-        $forceGeneration = $this->anticipate('Force Generate? (yes/no)', ['yes','no']);
+        $forceGeneration = $this->option('force-generation');
+        if (is_null($forceGeneration)) {
+            $forceGeneration = $this->anticipate('Force Generate? (yes/no)', ['yes','no']);
+        }
 
         if ($forceGeneration == 'no') {
             $forceGeneration = 0;
@@ -62,7 +68,10 @@ class GenerateAlbumSips extends Command
         if ($zipPath) {
             $this->line("Generated Zip from: $domain". $zipPath);
         }
-        $this->line("Log file: $domain". $logFileUrl);
+
+        if (file_exists($logFile)) {
+            $this->line("Log file: $domain". $logFileUrl);
+        }
 
     }
 }

@@ -44,24 +44,26 @@ class GenerateCSVSips extends Command
             throw new Exception('The CSV file path is not correct! Make sure the file exists.');
         }
 
-        $forceGeneration = $this->anticipate('Force Generation? (yes/no)', ['yes','no']);
+        $forceGeneration = 0;
 
-        if ($forceGeneration == 'no') {
-            $forceGeneration = 0;
+        if (($handle = fopen($csvPath, "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                $this->line('Starting with itemID: '.$data[0]);
+                
+                $this->call('generate-sip:standalone', [
+                    '--item-id'            =>  $data[0],
+                    '--force-generation'   =>  $forceGeneration
+                ]);
+
+                $this->call('generate-sip:album', [
+                    '--item-id'            =>  $data[0],
+                    '--force-generation'   =>  $forceGeneration
+                ]);
+
+
+            }
         }
 
-        $logFileName = 'log-csvs.html';
-
-        $logFile = public_path().'/downloads/sips/'.$logFileName;
-        $logFileUrl = '/downloads/sips/'.$logFileName;
-        $zipPath = $sipService->generateCSVSip($csvPath, $logFile, $forceGeneration);
-
-        $domain = 'http://slnsw-dmt-stage.tk';
-
-        if ($zipPath) {
-            $this->line("Generated Zip from: $domain". $zipPath);
-        }
-        $this->line("Log file: $domain". $logFileUrl);
 
 
     }
