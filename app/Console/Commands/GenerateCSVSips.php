@@ -12,7 +12,7 @@ class GenerateCSVSips extends Command
      *
      * @var string
      */
-    protected $signature = 'generate-sip:csv {--csv-path= : The path of CSV file to read from}';
+    protected $signature = 'generate-sip:csv {--csv-path= : The path of CSV file to read from} {--force-generation=0}';
 
     /**
      * The console command description.
@@ -44,8 +44,7 @@ class GenerateCSVSips extends Command
             throw new Exception('The CSV file path is not correct! Make sure the file exists.');
         }
 
-        $forceGeneration = 0;
-
+        $forceGeneration = $this->option('force-generation');
         if (($handle = fopen($csvPath, "r")) !== FALSE) {
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $this->line('Starting with itemID: '.$data[0]);
