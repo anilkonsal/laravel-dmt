@@ -567,11 +567,9 @@ class ItemRepository {
                                 ->get()
                                 ->keyBy('itemID');
 
-
         $this->_writeLog('Album Id: '. $albumId);
         $this->_writeLog('Number of images: '. count($imageRows));
         $this->_writeLog('Image ids: '. implode(', ', array_keys($imageRows->all())));
-
 
         /*
         Check if Album Row exists, if not, them return false
@@ -638,6 +636,7 @@ class ItemRepository {
                 $this->_writeLog('Image closed not equal to NO');
                 continue;
             }
+            // echo "Item ID: $itemId\n";
             $data[$itemId] = $this->_getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRows[$itemId], $collectionRows[$itemId]);
 
         }
@@ -719,9 +718,16 @@ class ItemRepository {
         $data['ie_dmd_title'] = $itemTextRow->ab;
         $data['ie_dmd_creator'] = $artist;
         $data['ie_dmd_source'] = $itemTextRow->ao;
-        foreach($types as $type) {
-            $data['ie_dmd_type'][] = $type;
+
+        if (!empty($types)) {
+                foreach($types as $type) {
+                    $data['ie_dmd_type'][] = $type;
+                }
+        } else {
+            $data['ie_dmd_type'] = '';
         }
+
+       
         $data['ie_dmd_accessRights'] = $itemTextRow->cb;
         $data['ie_dmd_date'] = $this->_getDatePart($itemTextRow->ah);
         $data['ie_dmd_isFormatOf'] = $ieDmdIsFormatOf;
@@ -905,7 +911,8 @@ class ItemRepository {
                     ->where('itemType', 'image')
                     ->first();
 
-        //dd($acmsRow);
+        // dd($acmsRow);
+        // dd($imageRow);
 
         $this->_writeLog('<h2><u>Started with item Id: '. $itemId.'</u></h2>');
         $this->_writeLog('ACMS item Id: '. $itemId);
@@ -953,7 +960,6 @@ class ItemRepository {
                         ->first();
 
 
-
         if (!empty($itemTextRow)) {
 
 
@@ -970,16 +976,23 @@ class ItemRepository {
                 }
             }
 
+
             $supress = $itemTextRow->cb;
 
             $imageRow->masterRoot = str_replace('\\', '/', $imageRow->masterRoot);
             $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
             $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
             $imageRow->lroot = str_replace('\\', '/', $imageRow->lroot);
+            
 
             $types = $this->_getDcType($itemTextRow->al);
-            foreach($types as $type) {
-                $data['ie_dmd_type'][] = $type;
+            
+            if (!empty($types)) {
+                foreach($types as $type) {
+                    $data['ie_dmd_type'][] = $type;
+                }
+            } else {
+                $data['ie_dmd_type'] = '';
             }
 
             $data['ie_dmd_identifier'] = $itemId;
@@ -989,7 +1002,9 @@ class ItemRepository {
             $data['ie_dmd_accessRights'] = $itemTextRow->cb;
             $data['ie_dmd_date'] = $this->_getDatePart($itemTextRow->ah);
             $data['ie_dmd_isFormatOf'] = !empty($itemTextRow->cl) ? $itemTextRow->cl : $itemTextRow->bk;
+            
             $data['ie_dmd_isFormatOf'] = $this->_getUrlPart($data['ie_dmd_isFormatOf']);
+            
 
             $data['fid1_1_dmd_title'] = $itemTextRow->ab;
             $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
@@ -1197,6 +1212,9 @@ class ItemRepository {
      */
     protected function _getDcType($type) : array
     {
+        if (empty($type)) {
+            return [];
+        }
         $typeMap = [
              'MM'   =>  'Multiple Media',
              'TR'   =>  'Textual Records',
@@ -1215,6 +1233,7 @@ class ItemRepository {
         $typesArr = explode(',', $type);
 
         $dcTypes = [];
+
 
         foreach ($typesArr as $typeItem) {
             $dcTypes[] = $typeMap[$typeItem];

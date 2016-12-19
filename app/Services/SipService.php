@@ -54,9 +54,9 @@ class SipService {
 
     public function generateItemSip($itemId, $logFile, $forceGeneration = false)
     {
-
+        
         $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile, $forceGeneration);
-
+        
         if ($data === false) {
             return false;
         }
@@ -137,14 +137,11 @@ class SipService {
      */
     public function generateAlbumItemSip($itemId, $logFile, $generateAlbumSip = false) {
         $data = $this->_itemRepository->getSipDataForAlbum($itemId, $logFile, $generateAlbumSip);
-
         if ($data === false) {
             return false;
         }
         $mainFolder = $this->_generateFolders($itemId);
-
         $xml = $this->_generateXMLForAlbumSip($data);
-
         file_put_contents($mainFolder.'/content/ie.xml', $xml);
         return $mainFolder;
     }
@@ -275,7 +272,7 @@ class SipService {
             unlink($logFile);
         }
 
-
+        
 
         foreach ($itemizedCounts as $childItemId => $counts) {
             if ($counts['albumsCount'] > 0) {
@@ -286,6 +283,7 @@ class SipService {
             }
         }
 
+        
         if (count($folders) > 0) {
             return $this->_generateZip($itemId, $folders);
         }
@@ -302,6 +300,7 @@ class SipService {
     public function generateSip($itemId, $logFile, $forceGeneration = false)
     {
         $itemizedCounts = $this->_itemRepository->getDetails($itemId)['itemizedCounts'];
+        
         $folders = [];
 
         if (file_exists($logFile)) {
