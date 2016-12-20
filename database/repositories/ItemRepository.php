@@ -518,6 +518,8 @@ class ItemRepository {
 
         $albumAcmsRow = Item::where('itemID', $itemId)->first();
 
+
+
         if (!$forceGeneration && $this->_checkIfMigrated($albumAcmsRow)) {
             $this->_writeLog('<div style="background:red; color: white;">Album already marked migrated in database, so skipping this album.</div>');
             return false;
@@ -553,6 +555,8 @@ class ItemRepository {
                         ->get()
                         ->keyBy('itemID');
 
+        
+
         $imageItemTextRows = \DB::table('itemtext')
                                 ->whereIn('itemID', function ($query) use ($albumId) {
                                     $query->select('itemID')
@@ -561,6 +565,19 @@ class ItemRepository {
                                 })
                                 ->get()
                                 ->keyBy('itemID');
+        
+        /**
+            NOTE:
+            In some cases like itemID = 1022861, there is one image row which does
+            not have the corresponding row in itemtext row. In this case, we have to
+            skip the album 1022861. (in this example case, there are 10 images for this album
+            but only 9 have entries in itemtext row)
+        **/
+
+        if (count($imageRows) != count($imageItemTextRows)) {
+            return false;
+        }
+        
 
         $collectionRows = \DB::table('collection')
                                 ->where('collectionID', $albumId)

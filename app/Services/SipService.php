@@ -137,6 +137,7 @@ class SipService {
      */
     public function generateAlbumItemSip($itemId, $logFile, $generateAlbumSip = false) {
         $data = $this->_itemRepository->getSipDataForAlbum($itemId, $logFile, $generateAlbumSip);
+
         if ($data === false) {
             return false;
         }
@@ -266,6 +267,8 @@ class SipService {
     public function generateAlbumSip($itemId, $logFile, $generateAlbumSip = false)
     {
         $itemizedCounts = $this->_itemRepository->getDetails($itemId)['itemizedCounts'];
+        
+
         $folders = [];
 
         if(file_exists($logFile)) {
@@ -275,6 +278,7 @@ class SipService {
         
 
         foreach ($itemizedCounts as $childItemId => $counts) {
+            
             if ($counts['albumsCount'] > 0) {
                 $result = $this->generateAlbumItemSip($childItemId, $logFile, $generateAlbumSip);
                 if ($result !== false) {
