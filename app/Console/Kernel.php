@@ -20,6 +20,8 @@ class Kernel extends ConsoleKernel
         Commands\GeneratePDFSips::class,
         Commands\GenerateRootAcmsCSV::class,
         Commands\GenerateCSVSips::class,
+        Commands\GenerateDigitArchiveSips::class,
+        Commands\GenerateDigitArchiveSip::class,
     ];
 
     /**

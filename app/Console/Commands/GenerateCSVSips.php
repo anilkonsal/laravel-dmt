@@ -41,7 +41,7 @@ class GenerateCSVSips extends Command
         $csvPath = $this->option('csv-path');
 
         if (!(file_exists($csvPath) && is_file($csvPath))) {
-            throw new Exception('The CSV file path is not correct! Make sure the file exists.');
+            throw new \Exception('The CSV file path is not correct! Make sure the file exists.');
         }
 
         $forceGeneration = $this->option('force-generation');

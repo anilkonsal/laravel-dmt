@@ -51,11 +51,34 @@ class SipService {
 
     }
 
-
-    public function generateItemSip($itemId, $logFile, $forceGeneration = false)
+    public function generateMissingSip($itemId, $logFile, $forceGeneration)
     {
+        $cdata = $this->_itemRepository->checkIfAllMissingFilesExist($itemId, $logFile);
         
-        $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile, $forceGeneration);
+        if ($cdata === false) {
+            return false;
+        }
+        
+        $filesArr = $cdata['missingRows'];
+        
+        $mainFolder = $this->_generateFolders($itemId);
+        
+        if ( $cdata['album_standalone'] == 's' ) {
+            // Call the generate Sip for Missing Standalone SIP
+            $this->generateItemSip($itemId, $logFile, $forceGeneration, true, $filesArr);
+        } else {
+            // Call the generate Sip for Missing Album SIP
+            $this->generateAlbumItemSip($itemId, $logFile, $forceGeneration, true, $filesArr);
+        }
+        
+        // $this->_itemRepository->deleteRowsFormMissingOnPermanentStorage($itemId);
+
+    }
+
+
+    public function generateItemSip($itemId, $logFile, $forceGeneration = false, $missing = false, $filesArr = [])
+    {
+        $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile, $forceGeneration, $missing, $filesArr);
         
         if ($data === false) {
             return false;
@@ -122,6 +145,16 @@ class SipService {
 
         ]);
 
+        if ($missing) {
+
+            $filesArr = [
+                '/var/www/html/digit_archive_images/a3864006r.jpg',
+                '/var/www/html/digit_archive_images/a3864006h.jpg',
+            ];
+
+            $this->_makeFilesZip($mainFolder, $filesArr);
+        }
+
         file_put_contents($mainFolder.'/content/ie.xml', $xml);
         return $mainFolder;
     }
@@ -135,14 +168,26 @@ class SipService {
      * @return mixed   Folder where the xml file was generated and placed
      *                 False otherwise
      */
-    public function generateAlbumItemSip($itemId, $logFile, $generateAlbumSip = false) {
-        $data = $this->_itemRepository->getSipDataForAlbum($itemId, $logFile, $generateAlbumSip);
-
+    public function generateAlbumItemSip($itemId, $logFile, $generateAlbumSip = false, $missing = false, $filesArr = []) {
+        $data = $this->_itemRepository->getSipDataForAlbum($itemId, $logFile, $generateAlbumSip, $missing, $filesArr);
+        
         if ($data === false) {
             return false;
         }
         $mainFolder = $this->_generateFolders($itemId);
         $xml = $this->_generateXMLForAlbumSip($data);
+
+        if ($missing) {
+
+            $filesArr = [
+                '/var/www/html/digit_archive_images/a3864006r.jpg',
+                '/var/www/html/digit_archive_images/a3864006h.jpg',
+            ];
+
+            $this->_makeFilesZip($mainFolder, $filesArr);
+        }
+
+
         file_put_contents($mainFolder.'/content/ie.xml', $xml);
         return $mainFolder;
     }
@@ -154,7 +199,7 @@ class SipService {
      */
     protected function _generateXMLForAlbumSip($data)
     {
-
+        // dd($data);
         $itemData = $data[array_keys($data)[0]];
 
         $ieDmdXml = view('xml.sip.album.partials.ie-dmd', [
@@ -184,6 +229,7 @@ class SipService {
 
                 $prefix1 = "fid".$x."-".$y;
                 $prefix2 = "fid1_".$y;
+                $prefix3 = "rep".$y;
 
                 $fidx_y = 'fid'.$x.'-'.$y;
 
@@ -208,7 +254,8 @@ class SipService {
 
                 $fileSecChildAmdXml .= view('xml.sip.album.partials.filesec-rep-child-amd', [
                     "fidx_y"                        =>  $fidx_y,
-                    'fidx_y_amd_fileOriginalPath'   =>  $item[$prefix2.'_amd_fileOriginalPath']
+                    'fidx_y_amd_fileOriginalPath'   =>  $item[$prefix3.'_amd_url']
+                    // 'fidx_y_amd_fileOriginalPath'   =>  $item[$prefix2.'_amd_fileOriginalPath']
                 ])->render();
 
                 $structMapRepChildXml .= view('xml.sip.album.partials.structmap-rep-child', [
@@ -358,6 +405,22 @@ class SipService {
     }
 
 
+    public function generateDigitArchiveSips()
+    {
+        $missingRows = $this->_itemRepository->getAllMissingRows();
+
+        if (count($missingRows) < 1) {
+            return 0;
+        }
+
+        // dd($missingRows);
+
+        // foreach ($missingRows as $missingRow) {
+
+        // }
+
+    }
+
     /**
      * Function to generate the required folder structure for the Sips
      * @param  integer $itemId
@@ -376,6 +439,25 @@ class SipService {
         @mkdir($streamFolder, 0775, true);
 
         return $dcIdentifierFolder;
+    }
+
+    protected function _makeFilesZip($mainFolder, $filesArr = [])
+    {
+        if (empty($filesArr)) {
+            throw new \Exception('Cannot create the files.zip file FilesArr is empty!');
+        }
+
+        $zip = new \ZipArchive();
+        $zipFilePath = $mainFolder .'/content/streams/files.zip';
+
+        $zip->open( $zipFilePath, \ZipArchive::CREATE);
+
+        foreach ($filesArr as $filePath) {
+            $zip->addFile($filePath, basename($filePath));
+        }
+
+        $zip->close();
+        return true;
     }
 
     /**

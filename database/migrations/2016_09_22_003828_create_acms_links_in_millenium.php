@@ -24,7 +24,7 @@ class CreateAcmsLinksInMillenium extends Migration
 
             $table->index('url');
             $table->index('item_id');
-            $table->index('file_name')
+            $table->index('file_name');
         });
     }
 

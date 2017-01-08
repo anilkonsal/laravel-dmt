@@ -17,6 +17,12 @@ class ItemRepository {
     const REP_PREVIEW = 'proot';
     const REP_THUMBNAIL = 'troot';
 
+    const REP_FOLDER_MASTER = 'master';
+    const REP_FOLDER_COMASTER = 'comaster';
+    const REP_FOLDER_HIRES = 'highres';
+    const REP_FOLDER_STDRES = 'screenres';
+
+
     protected $types = [
         self::TYPE_ALL   =>  [
             'assetType' =>  'image',
@@ -54,7 +60,6 @@ class ItemRepository {
         self::REP_PREVIEW       =>  'jpg',
         self::REP_THUMBNAIL     =>  'jpg',
     ];
-
 
 
     const REASON_ALREADY_MIGRATED = 'Already Migrated!';
@@ -210,11 +215,13 @@ class ItemRepository {
 
         return $count;
     }
+
+
     /**
      * Function to fetch the Root Level ACMS Rows
      * @param  integer $offset Starting offset
      * @param  integer $limit  Limit
-     * @return [type]          [description]
+     * @return Eloquent
      */
     public function getRootLevelAcmsRows(int $offset = 0, int $limit = 1000)
     {
@@ -294,6 +301,7 @@ class ItemRepository {
             'albumPreviewCount'  =>  0,
             'albumThumbnailCount'=>  0,
         ];
+
         $albumsCount = 0;
         // Fetch the item row
         $itemRow = \DB::table('item')
@@ -507,7 +515,7 @@ class ItemRepository {
      * @param  boolean $forceGeneration Whether to generate the marked migrated items
      * @return mixed  Array of data of all the images belonging to this album or False
      */
-    public function getSipDataForAlbum($itemId, $logFile, $forceGeneration = false)
+    public function getSipDataForAlbum($itemId, $logFile, $forceGeneration = false, $missing = false, $filesArr = [])
     {
         $data = [];
         $isMigrated = false;
@@ -517,8 +525,6 @@ class ItemRepository {
         $this->_writeLog('<h2><u>Started with Album with ACMS item Id: '. $itemId.'</u></h2>');
 
         $albumAcmsRow = Item::where('itemID', $itemId)->first();
-
-
 
         if (!$forceGeneration && $this->_checkIfMigrated($albumAcmsRow)) {
             $this->_writeLog('<div style="background:red; color: white;">Album already marked migrated in database, so skipping this album.</div>');
@@ -534,7 +540,7 @@ class ItemRepository {
                         ->where('itemID', $albumId)->first();
 
         $albumItemTextRow = \DB::table('itemtext')
-                        ->where('itemID', $albumId)->first();
+                                ->where('itemID', $albumId)->first();
 
         $supress = $itemTextRow->cb;
 
@@ -653,12 +659,12 @@ class ItemRepository {
                 $this->_writeLog('Image closed not equal to NO');
                 continue;
             }
-            // echo "Item ID: $itemId\n";
-            $data[$itemId] = $this->_getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRows[$itemId], $collectionRows[$itemId]);
-
+            
+            $data[$itemId] = $this->_getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRows[$itemId], $collectionRows[$itemId], $missing);
+            
         }
 
-        //dd($data);
+        
         /*
         If all the images are found for this album, mark this album as migrated
          */
@@ -671,7 +677,9 @@ class ItemRepository {
             return false;
         }
 
+        // dd($data);
         return $data;
+
     }
 
 /**
@@ -683,8 +691,9 @@ class ItemRepository {
  * @param  EloquentRowObject $collectionRow    [description]
  * @return Mixed data of all the images or false
  */
-    protected function _getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRow, $collectionRow)
+    protected function _getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRow, $collectionRow, $missing = false)
     {
+        
         $itemId = $itemTextRow->itemID;
         $supress = $itemTextRow->cb;
 
@@ -783,7 +792,12 @@ class ItemRepository {
         $data['fid1_3_amd_label'] = $title;
         $data['fid1_3_amd_groupID'] = $imageRow->itemKey;
 
-        $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
+        if (!$missing) {
+            $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
+        } else {
+            $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_HIRES);
+        }
+        
 
         if ($supress  == 'Image') {
             $data['fid1_3_dmd_title'] = $title;
@@ -803,7 +817,11 @@ class ItemRepository {
 
             $data['rep3_amd_rights'] = 'AR_EVERYONE';
 
-            $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'];
+             if (!$missing) {
+                    $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'];
+                } else {
+                    $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_STDRES);
+                }
 
         } elseif ($supress == 'No') {
             $data['rep3_amd_rights'] = 'AR_EVERYONE';
@@ -827,64 +845,75 @@ class ItemRepository {
         $data['fid1_2_amd_label'] = !empty($imageItemTextRow->ab) ? $imageItemTextRow->ab : $itemTextRow->ab;
         $data['fid1_2_amd_groupID'] = $imageRow->itemKey;
 
-        $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'];
-        $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'];
-
+         if (!$missing) {
+            $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'];
+            $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'];
+        } else {
+            $data['rep1_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_MASTER);
+            $data['rep2_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_COMASTER);
+        }
         $data['rep1_1_label'] = $title;
         $data['rep2_1_label'] = $title;
         $data['rep3_1_label'] = $title;
 
+        
+        if (!$missing) {
+            /*
+            Check on the Permanent storage if all the three files exist, if any one file does
+            not exist, then return false (which leads to this image being skipped for sip generation)
+            */
 
-        /*
-        Check on the Permanent storage if all the three files exist, if any one file does
-        not exist, then return false (which leads to this image being skipped for sip generation)
-        */
+            $this->_writeLog('<h4>Checking files on Permanent Storage.</h4>');
 
-         $this->_writeLog('<h4>Checking files on Permanent Storage.</h4>');
+            $result1 = $this->_doesFileExistsOnPermStorage($data['fid1_1_amd_fileOriginalPath'], $itemId, 'm', 'a');
+            $result2 = $this->_doesFileExistsOnPermStorage($data['fid1_2_amd_fileOriginalPath'], $itemId, 'c', 'a');
+            $result3 = $this->_doesFileExistsOnPermStorage($data['fid1_3_amd_fileOriginalPath'], $itemId, 'o', 'a');
 
-         $result1 = $this->_doesFileExistsOnPermStorage($data['fid1_1_amd_fileOriginalPath'], $itemId, 'm', 'a');
-         $result2 = $this->_doesFileExistsOnPermStorage($data['fid1_2_amd_fileOriginalPath'], $itemId, 'c', 'a');
-         $result3 = $this->_doesFileExistsOnPermStorage($data['fid1_3_amd_fileOriginalPath'], $itemId, 'o', 'a');
-
-         $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
+            $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
 
 
-         /*
-         If files exist on the Permanent Storage, then replace the paths in
-         data array as there may be case that variations exist
-          */
-         if ($doFilesExistInPermStorage) {
+            /*
+            If files exist on the Permanent Storage, then replace the paths in
+            data array as there may be case that variations exist
+            */
+            if ($doFilesExistInPermStorage) {
 
-             $basename1 = basename($result1['filePath']);
-             $basename2 = basename($result2['filePath']);
-             $basename3 = basename($result3['filePath']);
+                $basename1 = basename($result1['filePath']);
+                $basename2 = basename($result2['filePath']);
+                $basename3 = basename($result3['filePath']);
 
-             $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'] = $result1['filePath'];
-             $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
-             $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
+                $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'] = $result1['filePath'];
+                $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
+                $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
 
-             $data['fid1_1_amd_fileOriginalName'] = $basename1;
-             $data['fid1_2_amd_fileOriginalName'] = $basename2;
-             $data['fid1_3_amd_fileOriginalName'] = $basename3;
+                $data['fid1_1_amd_fileOriginalName'] = $basename1;
+                $data['fid1_2_amd_fileOriginalName'] = $basename2;
+                $data['fid1_3_amd_fileOriginalName'] = $basename3;
 
-             $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
-             $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
+                $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
+                $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
 
-             $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
-             $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
+                $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
+                $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
 
-             if ($supress  == 'Image') {
-                 $data['fid1_3_dmd_source'] = $imageRow->lroot . "/" . $imageRow->wpath . "/" . $basename3;
-                 $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->lroot .'/'. $imageRow->wpath . "/" . $basename3;
-             } else {
-                 $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $basename3;
-                 $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $basename3;
-             }
+                if ($supress  == 'Image') {
+                    $data['fid1_3_dmd_source'] = $imageRow->lroot . "/" . $imageRow->wpath . "/" . $basename3;
+                    $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->lroot .'/'. $imageRow->wpath . "/" . $basename3;
+                } else {
+                    $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $basename3;
+                    $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $basename3;
+                }
 
+            } else {
+                return false;
+            }
          } else {
-             return false;
-         }
-
+                 if ($imageRow->fromType != 'pdf') {
+                    $data['rep1_amd_rights'] = $data['rep2_amd_rights'] = '1062';
+                } else {
+                    $data['rep2_amd_rights'] = $data['rep1_amd_rights'] = 'AR_EVERYONE';
+                }
+            }
 
         return $data;
     }
@@ -901,15 +930,81 @@ class ItemRepository {
     }
 
 
+    public function deleteRowsFormMissingOnPermanentStorage($itemId)
+    {
+        \DB::table('missing_files_on_permanent_storage')
+                                ->where('item_id', $itemId)
+                                ->delete();
+        return true;
+    }
 
+    public function checkIfAllMissingFilesExist($itemId, $logFile)
+    {
+        $rows = \DB::table('missing_files_on_permanent_storage')
+                                ->where('item_id', $itemId)
+                                ->get();
+                        
+        $totalMissingRowsForItemCount = count($rows);
+        $totalFoundCount = 0;
+        $missingRowsArr = [];
 
-    /**
+        foreach ($rows as $row) {
+
+            $fileBaseName = $this->_getFileBaseName($row);
+
+            $missingRows = \DB::table('digit_archive')
+                                ->where('file_name', 'like', $fileBaseName .'%')
+                                ->get();
+
+            if ($missingRows) {
+                foreach ($missingRows as $missingRow) {
+                    $missingRowsArr[$missingRow->file_name] = $missingRow->path;
+                }
+            }
+        }
+        
+        $totalFoundCount = count($missingRowsArr);
+
+        if ($totalMissingRowsForItemCount <= $totalFoundCount) {
+            // All Images found on Digit Archive
+            return [
+                'status'            =>  1,
+                'album_standalone'  =>  $rows[0]->album_standalone,
+                'missingRows'        =>  $missingRowsArr,
+            ];
+        } else {
+            return false;
+        }
+    }
+
+    protected function _getFileBaseName($row)
+    {
+        list($fileName, $ext) = explode('.', $row->file_name);
+
+        if ($row->representation === 'm') {
+            if (substr($fileName, -1) === 'u') {
+                return substr($fileName, 0, -1);
+            } elseif (substr($fileName, -2) === '_m') {
+                return substr($fileName, 0, -2);
+            }
+        } elseif ($row->representation === 'c') {
+            if (substr($fileName, -2) === '_c') {
+                return substr($fileName, 0, -2);
+            }
+            return $fileName;
+        } elseif ($row->representation === 'h' || $row->representation === 'l') {
+            return substr($fileName, 0, -1);
+        }
+    }
+
+   
+   /**
      * Function to get the SIP data for a single standalone image
      * @param  Integer $itemId The item ID of the ACMS Row
      * @param  boolean $forceGeneration Whether the items marked migrated in database should be regenerated?
      * @return Array         Data field with differnt items needed to fill in XML
      */
-    public function getSipDataForStandAlone($itemId, $logFile, $forceGeneration = false)
+    public function getSipDataForStandAlone($itemId, $logFile, $forceGeneration = false, $missing = false, $filesArr = [])
     {
 
         $data = [];
@@ -928,8 +1023,6 @@ class ItemRepository {
                     ->where('itemType', 'image')
                     ->first();
 
-        // dd($acmsRow);
-        // dd($imageRow);
 
         $this->_writeLog('<h2><u>Started with item Id: '. $itemId.'</u></h2>');
         $this->_writeLog('ACMS item Id: '. $itemId);
@@ -978,7 +1071,6 @@ class ItemRepository {
 
 
         if (!empty($itemTextRow)) {
-
 
             $artist = '';
             $artistID = (int)trim($itemTextRow->at, ',');
@@ -1053,7 +1145,12 @@ class ItemRepository {
             $data['fid1_3_amd_label'] = $itemTextRow->ab;
             $data['fid1_3_amd_groupID'] = $imageRow->itemKey;
 
-            $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
+            if (!$missing) {
+                $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
+            } else {
+                $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_HIRES);
+            }
+            
 
             if ($supress  == 'Image') {
                 $data['fid1_3_dmd_title'] = $itemTextRow->ab;
@@ -1072,7 +1169,12 @@ class ItemRepository {
 
                 $data['rep3_amd_rights'] = 'AR_EVERYONE';
 
-                $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'];
+                if (!$missing) {
+                    $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'];
+                } else {
+                    $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_STDRES);
+                }
+                
 
             } elseif ($supress == 'No') {
                 $data['rep3_amd_rights'] = 'AR_EVERYONE';
@@ -1101,67 +1203,78 @@ class ItemRepository {
             $data['fid1_2_amd_label'] = $itemTextRow->ab;
             $data['fid1_2_amd_groupID'] = $imageRow->itemKey;
 
-            $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'];
-            $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'];
+            if (!$missing) {
+                $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'];
+                $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'];
+            } else {
+                $data['rep1_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_MASTER);
+                $data['rep2_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_COMASTER);
+            }
 
             $data['rep1_1_label'] = $itemTextRow->ab;
             $data['rep2_1_label'] = $itemTextRow->ab;
             $data['rep3_1_label'] = $itemTextRow->ab;
 
+                
 
             /*
             Check on the Permanent storage if all the three files exist, if any one file does
             not exist, then return false (which leads to this image being skipped for sip generation)
             */
 
-             $this->_writeLog('<h4>Checking files on Permanent Storage.</h4>');
+            if (!$missing) {
+
+                $this->_writeLog('<h4>Checking files on Permanent Storage.</h4>');
+
+                $result1 = $this->_doesFileExistsOnPermStorage($data['fid1_1_amd_fileOriginalPath'], $itemId, 'm', 's');
+                $result2 = $this->_doesFileExistsOnPermStorage($data['fid1_2_amd_fileOriginalPath'], $itemId, 'c', 's');
+                $result3 = $this->_doesFileExistsOnPermStorage($data['fid1_3_amd_fileOriginalPath'], $itemId, 'o', 's');
+
+                if ($imageRow->fromType != 'pdf') {
+                    $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
+                    $data['rep1_amd_rights'] = $data['rep2_amd_rights'] = '1062';
+                } else {
+                    $doFilesExistInPermStorage = $result1['found'] || $result2['found'] || $result3['found'];
+                    $data['rep2_amd_rights'] = $data['rep1_amd_rights'] = 'AR_EVERYONE';
+                }
 
 
-             $result1 = $this->_doesFileExistsOnPermStorage($data['fid1_1_amd_fileOriginalPath'], $itemId, 'm', 's');
-             $result2 = $this->_doesFileExistsOnPermStorage($data['fid1_2_amd_fileOriginalPath'], $itemId, 'c', 's');
-             $result3 = $this->_doesFileExistsOnPermStorage($data['fid1_3_amd_fileOriginalPath'], $itemId, 'o', 's');
+                if ($doFilesExistInPermStorage) {
 
+                    $basename1 = basename($result1['filePath']);
+                    $basename2 = basename($result2['filePath']);
+                    $basename3 = basename($result3['filePath']);
 
-             if ($imageRow->fromType != 'pdf') {
-                $doFilesExistInPermStorage = $result1['found'] && $result2['found'] && $result3['found'];
-                $data['rep1_amd_rights'] = $data['rep2_amd_rights'] = '1062';
+                    $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'] = $result1['filePath'];
+                    $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
+                    $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
+
+                    $data['fid1_1_amd_fileOriginalName'] = $result1['found'] ? $basename1 : '';
+                    $data['fid1_2_amd_fileOriginalName'] = $result2['found'] ? $basename2 : '';
+                    $data['fid1_3_amd_fileOriginalName'] = $result3['found'] ? $basename3 : '';
+
+                    $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
+                    $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
+
+                    $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
+                    $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
+
+                    if ($supress  == 'Image') {
+                        $data['fid1_3_dmd_source'] = $imageRow->lroot . "/" . $imageRow->wpath . "/" . $basename3;
+                        $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->lroot .'/'. $imageRow->wpath . "/" . $basename3;
+                    } else {
+                        $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $basename3;
+                        $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $basename3;
+                    }
+
+                }
             } else {
-                $doFilesExistInPermStorage = $result1['found'] || $result2['found'] || $result3['found'];
-                $data['rep2_amd_rights'] = $data['rep1_amd_rights'] = 'AR_EVERYONE';
+                 if ($imageRow->fromType != 'pdf') {
+                    $data['rep1_amd_rights'] = $data['rep2_amd_rights'] = '1062';
+                } else {
+                    $data['rep2_amd_rights'] = $data['rep1_amd_rights'] = 'AR_EVERYONE';
+                }
             }
-
-
-             if ($doFilesExistInPermStorage) {
-
-                 $basename1 = basename($result1['filePath']);
-                 $basename2 = basename($result2['filePath']);
-                 $basename3 = basename($result3['filePath']);
-
-                 $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'] = $result1['filePath'];
-                 $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'] = $result2['filePath'];
-                 $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'] = $result3['filePath'];
-
-                 $data['fid1_1_amd_fileOriginalName'] = $result1['found'] ? $basename1 : '';
-                 $data['fid1_2_amd_fileOriginalName'] = $result2['found'] ? $basename2 : '';
-                 $data['fid1_3_amd_fileOriginalName'] = $result3['found'] ? $basename3 : '';
-
-                 $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
-                 $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $basename1;
-
-                 $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
-                 $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $basename2;
-
-                 if ($supress  == 'Image') {
-                     $data['fid1_3_dmd_source'] = $imageRow->lroot . "/" . $imageRow->wpath . "/" . $basename3;
-                     $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->lroot .'/'. $imageRow->wpath . "/" . $basename3;
-                 } else {
-                     $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $basename3;
-                     $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $basename3;
-                 }
-
-
-
-             }
 
         } else {
             $itemTextRowFound = false;
@@ -1195,10 +1308,24 @@ class ItemRepository {
          }
          $this->_closeLog();
 
-
-
         return $data;
     }
+
+
+    public function getImageName($filesArr, $repFolder)
+    {
+        if (empty($filesArr)) {
+            throw new \Exception('Files Array should not be empty!');
+        }
+
+        foreach ($filesArr as $fileName => $filePath) {
+            if (strpos($filePath, '/'. $repFolder .'/') !== false) {
+                return $fileName;
+            }
+        }
+    }
+
+
 
     /**
      * Function to mark the row as migrated
@@ -1321,7 +1448,7 @@ class ItemRepository {
 
              /*
              If this is a master or comaster representation, then
-              */
+             */
              if (in_array($representation, ['m','c'])) {
 
                  /*
