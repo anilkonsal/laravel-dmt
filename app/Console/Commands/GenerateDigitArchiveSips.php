@@ -12,7 +12,7 @@ class GenerateDigitArchiveSips extends Command
      *
      * @var string
      */
-    protected $signature = 'generate-sip:digit-archive';
+    protected $signature = 'generate-sip:digit-archive  {--force-generation=0}';
 
     /**
      * The console command description.
@@ -38,16 +38,15 @@ class GenerateDigitArchiveSips extends Command
      */
     public function handle(SipService $sipService)
     {
+        $forceGeneration = $this->option('force-generation');
+
         \DB::table('missing_files_on_permanent_storage')
-                ->distinct('item_id')->chunk(100, function ($missingRows) {
-            
+                ->distinct('item_id')->chunk(100, function ($missingRows) use ($forceGeneration){
                     foreach ($missingRows as $missingRow) {
-                        
-                        $this->line('Starting with item ID: '.$missingRow->item_id);
-                
+                        $this->line('Starting with item ID: '.$missingRow->item_id);                
                         $this->call('generate-sip:digit-archive-item', [
                             '--item-id'            =>  $missingRow->item_id,
-                            '--force-generation'   =>  1
+                            '--force-generation'   =>  $forceGeneration
                         ]);
                     }
             
