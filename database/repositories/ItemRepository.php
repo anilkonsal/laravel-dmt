@@ -660,7 +660,7 @@ class ItemRepository {
                 continue;
             }
             
-            $data[$itemId] = $this->_getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRows[$itemId], $collectionRows[$itemId], $missing);
+            $data[$itemId] = $this->_getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRows[$itemId], $collectionRows[$itemId], $missing, $filesArr);
             
         }
 
@@ -691,9 +691,11 @@ class ItemRepository {
  * @param  EloquentRowObject $collectionRow    [description]
  * @return Mixed data of all the images or false
  */
-    protected function _getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRow, $collectionRow, $missing = false)
+    protected function _getDataForImage($itemTextRow, $albumItemTextRow, $imageRow, $imageItemTextRow, $collectionRow, $missing = false, $filesArr = [])
     {
         
+        // dd($filesArr);
+
         $itemId = $itemTextRow->itemID;
         $supress = $itemTextRow->cb;
 
@@ -701,7 +703,9 @@ class ItemRepository {
         $imageRow->fromRoot = str_replace('\\', '/', $imageRow->fromRoot);
         $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
 
+        $fileName = $imageRow->itemKey;
 
+        
 
         $artist = '';
 
@@ -795,7 +799,7 @@ class ItemRepository {
         if (!$missing) {
             $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
         } else {
-            $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_HIRES);
+            $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_HIRES, $fileName);
         }
         
 
@@ -820,7 +824,7 @@ class ItemRepository {
              if (!$missing) {
                     $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'];
                 } else {
-                    $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_STDRES);
+                    $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_STDRES, $fileName);
                 }
 
         } elseif ($supress == 'No') {
@@ -849,8 +853,8 @@ class ItemRepository {
             $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'];
             $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'];
         } else {
-            $data['rep1_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_MASTER);
-            $data['rep2_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_COMASTER);
+            $data['rep1_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_MASTER, $fileName);
+            $data['rep2_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_COMASTER, $fileName);
         }
         $data['rep1_1_label'] = $title;
         $data['rep2_1_label'] = $title;
@@ -940,6 +944,162 @@ class ItemRepository {
 
     public function checkIfAllMissingFilesExist($itemId, $logFile)
     {
+        $this->_log = $logFile;
+        $rows = \DB::table('missing_files_on_permanent_storage')
+                                ->where('item_id', $itemId)
+                                ->get();
+                        
+        $totalMissingRowsForItemCount = count($rows);
+        $totalFoundCount = 0;
+        $missingRowsArr = [];
+
+        $this->_writeLog('<h2><u>Started with item Id: '. $itemId.'</u></h2>');
+
+        $repsFound = [];
+
+        $albumStandalone = $rows[0]->album_standalone;
+
+        if ($albumStandalone == 's') {
+            $row = $rows[0];
+
+            $itemRow = \DB::table('item')->where('itemId', $itemId)->first();            
+    
+            $fileBaseName = $this->_getFileBaseName($row);
+
+            $year = substr($itemRow->masterRoot ,-4);
+
+            $yfk = '/' . $year .'/'. $itemRow->masterFolder . '/' . $itemRow->masterKey;
+
+            $masterSuffix = $itemRow->fromType != 'pdf' ? 'u' : '';
+            $extension = $itemRow->fromType != 'pdf' ? 'tif' : 'pdf';
+
+            $masterPath = '/mnt/digitarchive/master'. $yfk;
+            $comasterPath = '/mnt/digitarchive/comaster'. $yfk;
+            $highresPath = '/mnt/digitarchive/derivatives/highres/image/'. $itemRow->wpath . '/'. $fileBaseName;
+            $stdresPath = '/mnt/digitarchive/derivatives/screenres/image/'. $itemRow->wpath . '/'. $fileBaseName;
+            
+            // dd($masterPath, $comasterPath, $highresPath, $stdresPath);
+
+            $missingRows = \DB::table('digit_archive')
+                                ->where('path', 'like', $masterPath.'%')
+                                ->orWhere('path', 'like', $comasterPath.'%')
+                                ->orWhere('path', 'like', $highresPath.'%')
+                                ->orWhere('path', 'like', $stdresPath.'%')
+                                ->get();
+
+
+            if ($missingRows) {
+                foreach ($missingRows as $missingRow) {
+                    if (preg_match('/(master|comaster|highres|screenres)/',$missingRow->path, $matches)) {
+                        $repsFound[] = $matches[0];
+                        
+                    }
+                    $missingRowsArr[$missingRow->path] = $missingRow->file_name;
+                }
+            }
+
+            
+
+            if (!(in_array(self::REP_FOLDER_MASTER, $repsFound) && in_array(self::REP_FOLDER_COMASTER, $repsFound) 
+                && (in_array(self::REP_FOLDER_HIRES, $repsFound) || in_array(self::REP_FOLDER_STDRES, $repsFound)))) {
+                    
+                    $this->_writeLog('<div style="background:red; color:white;">Not all 3 required representations were found on Digit Archive</div>' );
+                    $this->_writeLog('Reps Found are:<ul><li>' . implode( '</li><li>', array_flip($missingRowsArr)) . '</li></ul>');
+                    return false;    
+                }
+            
+        } else {
+
+            $itemTextRow = \DB::table('itemtext')
+                        ->where('itemID', $itemId)->first();
+
+            $albumId = $itemTextRow->album_id;
+
+            $imageRows = \DB::table('item')
+                        ->join('collection', 'item.itemID', '=', 'collection.itemID')
+                        ->whereIn('item.itemID', function($query) use ($albumId) {
+                            $query->select('collection.itemID')
+                                ->from('item')
+                                ->join('collection','item.itemID', '=', 'collection.collectionID')
+                                ->where('assetType', 'image')
+                                ->where('itemType', 'Album')
+                                ->where('collection.collectionID', $albumId);
+                        })
+                        ->where('assetType', 'image')
+                        ->where('itemType', 'Image')
+                        ->where('status', '<>', 'rejected')
+                        ->orderBy(\DB::raw('cast(collection.itemIndex as decimal(10,4))'))
+                        ->get()
+                        ->keyBy('itemID');          
+
+            // dd ($imageRows);
+
+            foreach ($imageRows as $itemRow) {
+                
+        
+                $fileBaseName = $itemRow->masterKey;
+
+                $year = substr($itemRow->masterRoot ,-4);
+
+                $yfk = '/' . $year .'/'. $itemRow->masterFolder . '/' . $itemRow->masterKey;
+
+                $masterSuffix = $itemRow->fromType != 'pdf' ? 'u' : '';
+                $extension = $itemRow->fromType != 'pdf' ? 'tif' : 'pdf';
+
+                $masterPath = '/mnt/digitarchive/master'. $yfk;
+                $comasterPath = '/mnt/digitarchive/comaster'. $yfk;
+                $highresPath = '/mnt/digitarchive/derivatives/highres/image/'. $itemRow->wpath . '/'. $fileBaseName;
+                $stdresPath = '/mnt/digitarchive/derivatives/screenres/image/'. $itemRow->wpath . '/'. $fileBaseName;
+                
+                // dd($masterPath, $comasterPath, $highresPath, $stdresPath);
+
+                $missingRows = \DB::table('digit_archive')
+                                    ->where('path', 'like', $masterPath.'%')
+                                    ->orWhere('path', 'like', $comasterPath.'%')
+                                    ->orWhere('path', 'like', $highresPath.'%')
+                                    ->orWhere('path', 'like', $stdresPath.'%')
+                                    ->get();
+
+                                    
+
+                if ($missingRows) {
+                    foreach ($missingRows as $missingRow) {
+                        if (preg_match('/(master|comaster|highres|screenres)/',$missingRow->path, $matches)) {
+                            $repsFound[] = $matches[0];
+                        }
+                        $missingRowsArr[$missingRow->path] = $missingRow->file_name;
+                    }
+                }
+
+            
+
+                if (!(in_array(self::REP_FOLDER_MASTER, $repsFound) && in_array(self::REP_FOLDER_COMASTER, $repsFound) 
+                    && (in_array(self::REP_FOLDER_HIRES, $repsFound) || in_array(self::REP_FOLDER_STDRES, $repsFound)))) {
+                        $this->_writeLog('<div style="background:red; color:white;">Not all 3 required representations were found on Digit Archive</div>' );
+                        $this->_writeLog('Reps Found are:<ul><li>' . implode( '</li><li>', array_flip($missingRowsArr)) . '</li></ul>');
+                        return false;    
+                    }
+                }
+
+        }
+       
+        
+        $totalFoundCount = count($missingRowsArr);
+
+        if ($totalMissingRowsForItemCount <= $totalFoundCount) {
+            // All Images found on Digit Archive
+            return [
+                'status'            =>  1,
+                'album_standalone'  =>  $rows[0]->album_standalone,
+                'missingRows'        =>  $missingRowsArr,
+            ];
+        } else {
+            return false;
+        }
+    }
+
+    public function checkIfAllMissingFilesExist1($itemId, $logFile)
+    {
         $rows = \DB::table('missing_files_on_permanent_storage')
                                 ->where('item_id', $itemId)
                                 ->get();
@@ -952,8 +1112,20 @@ class ItemRepository {
 
             $fileBaseName = $this->_getFileBaseName($row);
 
+
+            $search = '/permanent_storage/legacy';
+            $replace = '/mnt/digitarchive';
+
+            $path = str_replace($search, $replace, dirname($row->file_path));
+            $path = str_replace(['master', 'comaster', 'derivatives/highres/images/', 'derivatives/screenres/images'], '%', $path);
+
+            // $patterns = ['/master/', '/comaster/', '/derivatives\/highres\/image\/(\d+)\/(\d+)/', '/derivatives\/screenres\/image\/(\d+)\/(\d+)/'];
+            // $path = preg_replace($patterns, '%', $path);
+
+
+            echo $path .'/'. $fileBaseName . "\n"; 
             $missingRows = \DB::table('digit_archive')
-                                ->where('file_name', 'like', $fileBaseName .'%')
+                                ->where('path', 'like', $path . '/' . $fileBaseName .'%')
                                 ->get();
 
             if ($missingRows) {
@@ -962,8 +1134,11 @@ class ItemRepository {
                 }
             }
         }
+       
         
         $totalFoundCount = count($missingRowsArr);
+
+        dd($missingRowsArr);
 
         if ($totalMissingRowsForItemCount <= $totalFoundCount) {
             // All Images found on Digit Archive
@@ -1093,6 +1268,7 @@ class ItemRepository {
             $imageRow->wroot = str_replace('\\', '/', $imageRow->wroot);
             $imageRow->lroot = str_replace('\\', '/', $imageRow->lroot);
             
+            $fileName = $imageRow->itemKey;
 
             $types = $this->_getDcType($itemTextRow->al);
             
@@ -1113,7 +1289,6 @@ class ItemRepository {
             $data['ie_dmd_isFormatOf'] = !empty($itemTextRow->cl) ? $itemTextRow->cl : $itemTextRow->bk;
             
             $data['ie_dmd_isFormatOf'] = $this->_getUrlPart($data['ie_dmd_isFormatOf']);
-            
 
             $data['fid1_1_dmd_title'] = $itemTextRow->ab;
             $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
@@ -1148,7 +1323,7 @@ class ItemRepository {
             if (!$missing) {
                 $data['rep3_amd_url'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
             } else {
-                $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_HIRES);
+                $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_HIRES, $fileName);
             }
             
 
@@ -1172,7 +1347,7 @@ class ItemRepository {
                 if (!$missing) {
                     $data['rep3_amd_url'] = $data['fid1_3_amd_fileOriginalPath'];
                 } else {
-                    $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_STDRES);
+                    $data['rep3_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_STDRES, $fileName);
                 }
                 
 
@@ -1207,8 +1382,8 @@ class ItemRepository {
                 $data['rep1_amd_url'] = $data['fid1_1_amd_fileOriginalPath'];
                 $data['rep2_amd_url'] = $data['fid1_2_amd_fileOriginalPath'];
             } else {
-                $data['rep1_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_MASTER);
-                $data['rep2_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_COMASTER);
+                $data['rep1_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_MASTER, $fileName);
+                $data['rep2_amd_url'] = "file://" . $this->getImageName($filesArr, self::REP_FOLDER_COMASTER, $fileName);
             }
 
             $data['rep1_1_label'] = $itemTextRow->ab;
@@ -1312,14 +1487,14 @@ class ItemRepository {
     }
 
 
-    public function getImageName($filesArr, $repFolder)
+    public function getImageName($filesArr, $repFolder, $file = '')
     {
         if (empty($filesArr)) {
             throw new \Exception('Files Array should not be empty!');
         }
-
-        foreach ($filesArr as $fileName => $filePath) {
-            if (strpos($filePath, '/'. $repFolder .'/') !== false) {
+       
+        foreach ($filesArr as $filePath => $fileName) {
+            if(preg_match("/\/".$repFolder."\/.*\/".$file."/", $filePath, $matches)){
                 return $fileName;
             }
         }

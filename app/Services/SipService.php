@@ -71,7 +71,7 @@ class SipService {
             $this->generateAlbumItemSip($itemId, $logFile, $forceGeneration, true, $filesArr);
         }
         
-        // $this->_itemRepository->deleteRowsFormMissingOnPermanentStorage($itemId);
+        $this->_itemRepository->deleteRowsFormMissingOnPermanentStorage($itemId);
 
     }
 
@@ -79,7 +79,8 @@ class SipService {
     public function generateItemSip($itemId, $logFile, $forceGeneration = false, $missing = false, $filesArr = [])
     {
         $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile, $forceGeneration, $missing, $filesArr);
-        
+        // dd($filesArr);
+        // dd($data);
         if ($data === false) {
             return false;
         }
@@ -147,10 +148,10 @@ class SipService {
 
         if ($missing) {
 
-            $filesArr = [
-                '/var/www/html/digit_archive_images/a3864006r.jpg',
-                '/var/www/html/digit_archive_images/a3864006h.jpg',
-            ];
+            // $filesArr = [
+            //     '/var/www/html/digit_archive_images/a3864006r.jpg',
+            //     '/var/www/html/digit_archive_images/a3864006h.jpg',
+            // ];
 
             $this->_makeFilesZip($mainFolder, $filesArr);
         }
@@ -169,8 +170,9 @@ class SipService {
      *                 False otherwise
      */
     public function generateAlbumItemSip($itemId, $logFile, $generateAlbumSip = false, $missing = false, $filesArr = []) {
+
         $data = $this->_itemRepository->getSipDataForAlbum($itemId, $logFile, $generateAlbumSip, $missing, $filesArr);
-        
+
         if ($data === false) {
             return false;
         }
@@ -179,10 +181,10 @@ class SipService {
 
         if ($missing) {
 
-            $filesArr = [
-                '/var/www/html/digit_archive_images/a3864006r.jpg',
-                '/var/www/html/digit_archive_images/a3864006h.jpg',
-            ];
+            // $filesArr = [
+            //     '/var/www/html/digit_archive_images/a3864006r.jpg',
+            //     '/var/www/html/digit_archive_images/a3864006h.jpg',
+            // ];
 
             $this->_makeFilesZip($mainFolder, $filesArr);
         }
