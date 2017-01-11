@@ -41,7 +41,8 @@ class GenerateDigitArchiveSips extends Command
         $forceGeneration = $this->option('force-generation');
 
         \DB::table('missing_files_on_permanent_storage')
-                ->distinct('item_id')->chunk(100, function ($missingRows) use ($forceGeneration){
+                ->select('item_id')
+                ->distinct()->chunk(100, function ($missingRows) use ($forceGeneration){
                     foreach ($missingRows as $missingRow) {
                         $this->line('Starting with item ID: '.$missingRow->item_id);                
                         // $this->call('generate-sip:digit-archive-item', [
