@@ -44,10 +44,10 @@ class GenerateDigitArchiveSips extends Command
                 ->distinct('item_id')->chunk(100, function ($missingRows) use ($forceGeneration){
                     foreach ($missingRows as $missingRow) {
                         $this->line('Starting with item ID: '.$missingRow->item_id);                
-                        $this->call('generate-sip:digit-archive-item', [
-                            '--item-id'            =>  $missingRow->item_id,
-                            '--force-generation'   =>  $forceGeneration
-                        ]);
+                        // $this->call('generate-sip:digit-archive-item', [
+                        //     '--item-id'            =>  $missingRow->item_id,
+                        //     '--force-generation'   =>  $forceGeneration
+                        // ]);
                     }
             
         });
