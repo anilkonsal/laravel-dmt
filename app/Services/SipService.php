@@ -149,16 +149,9 @@ class SipService {
         ]);
 
         if ($missing) {
-
-            // $filesArr = [
-            //     '/var/www/html/digit_archive_images/a3864006r.jpg',
-            //     '/var/www/html/digit_archive_images/a3864006h.jpg',
-            // ];
-
-        
             $this->_makeFilesZip($mainFolder, $filesArr);
         }
-
+        dd($xml);
         file_put_contents($mainFolder.'/content/ie.xml', $xml);
         return $mainFolder;
     }
