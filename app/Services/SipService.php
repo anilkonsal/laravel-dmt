@@ -462,6 +462,9 @@ class SipService {
         }
 
         $zip->close();
+
+        dd($mainFolder, $filesArr);
+
         return true;
     }
 
