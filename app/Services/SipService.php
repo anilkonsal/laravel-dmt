@@ -151,7 +151,7 @@ class SipService {
         if ($missing) {
             $this->_makeFilesZip($mainFolder, $filesArr);
         }
-        dd($xml);
+        // dd($xml);
         file_put_contents($mainFolder.'/content/ie.xml', $xml);
         return $mainFolder;
     }
