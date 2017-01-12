@@ -989,7 +989,7 @@ class ItemRepository {
             $highresPath = '/mnt/digitarchive/derivatives/highres/image/'. $imageRow->wpath . '/'. $fileBaseName;
             $stdresPath = '/mnt/digitarchive/derivatives/screenres/image/'. $imageRow->wpath . '/'. $fileBaseName;
             
-            dd($masterPath, $comasterPath, $highresPath, $stdresPath);
+            // dd($masterPath, $comasterPath, $highresPath, $stdresPath);
 
             $missingRows = \DB::table('digit_archive')
                                 ->where('path', 'like', $masterPath.'%')
