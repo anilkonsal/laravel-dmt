@@ -962,7 +962,9 @@ class ItemRepository {
         if ($albumStandalone == 's') {
             $row = $rows[0];
 
-            $digitalId = $row->fromKey;
+            $acmsRow = \DB::table('item')->where('itemId', $itemId)->first();
+
+            $digitalId = $acmsRow->fromKey;
 
             $imageRow = \DB::table('item')
                     ->where('fromKey', $digitalId)
@@ -970,7 +972,7 @@ class ItemRepository {
                     ->where('itemType', 'image')
                     ->first();
 
-            $imageRow = \DB::table('item')->where('itemId', $itemId)->first();  
+            // $imageRow = \DB::table('item')->where('itemId', $itemId)->first();  
 
     
             $fileBaseName = $this->_getFileBaseName($row);
