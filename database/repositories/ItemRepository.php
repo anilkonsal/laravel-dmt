@@ -962,21 +962,30 @@ class ItemRepository {
         if ($albumStandalone == 's') {
             $row = $rows[0];
 
-            $itemRow = \DB::table('item')->where('itemId', $itemId)->first();            
+            $digitalId = $row->fromKey;
+
+            $imageRow = \DB::table('item')
+                    ->where('fromKey', $digitalId)
+                    ->where('assetType', 'image')
+                    ->where('itemType', 'image')
+                    ->first();
+
+            $imageRow = \DB::table('item')->where('itemId', $itemId)->first();  
+
     
             $fileBaseName = $this->_getFileBaseName($row);
 
-            $year = substr($itemRow->masterRoot ,-4);
+            $year = substr($imageRow->masterRoot ,-4);
 
-            $yfk = '/' . $year .'/'. $itemRow->masterFolder . '/' . $itemRow->masterKey;
+            $yfk = '/' . $year .'/'. $imageRow->masterFolder . '/' . $imageRow->masterKey;
 
-            $masterSuffix = $itemRow->fromType != 'pdf' ? 'u' : '';
-            $extension = $itemRow->fromType != 'pdf' ? 'tif' : 'pdf';
+            $masterSuffix = $imageRow->fromType != 'pdf' ? 'u' : '';
+            $extension = $imageRow->fromType != 'pdf' ? 'tif' : 'pdf';
 
             $masterPath = '/mnt/digitarchive/master'. $yfk;
             $comasterPath = '/mnt/digitarchive/comaster'. $yfk;
-            $highresPath = '/mnt/digitarchive/derivatives/highres/image/'. $itemRow->wpath . '/'. $fileBaseName;
-            $stdresPath = '/mnt/digitarchive/derivatives/screenres/image/'. $itemRow->wpath . '/'. $fileBaseName;
+            $highresPath = '/mnt/digitarchive/derivatives/highres/image/'. $imageRow->wpath . '/'. $fileBaseName;
+            $stdresPath = '/mnt/digitarchive/derivatives/screenres/image/'. $imageRow->wpath . '/'. $fileBaseName;
             
             // dd($masterPath, $comasterPath, $highresPath, $stdresPath);
 
