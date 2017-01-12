@@ -1003,9 +1003,9 @@ class ItemRepository {
                 foreach ($missingRows as $missingRow) {
                     if (preg_match('/(master|comaster|highres|screenres)/',$missingRow->path, $matches)) {
                         $repsFound[] = $matches[0];
-                        
+                        $missingRowsArr[$missingRow->path] = $matches[0] . '/' . $missingRow->file_name;
                     }
-                    $missingRowsArr[$missingRow->path] = $missingRow->file_name;
+                    
                 }
             }
 
@@ -1077,8 +1077,9 @@ class ItemRepository {
                     foreach ($missingRows as $missingRow) {
                         if (preg_match('/(master|comaster|highres|screenres)/',$missingRow->path, $matches)) {
                             $repsFound[] = $matches[0];
+                            $missingRowsArr[$missingRow->path] = $matches[0] . '/' . $missingRow->file_name;
                         }
-                        $missingRowsArr[$missingRow->path] = $missingRow->file_name;
+                        
                     }
                 }
 
@@ -1109,59 +1110,7 @@ class ItemRepository {
         }
     }
 
-    public function checkIfAllMissingFilesExist1($itemId, $logFile)
-    {
-        $rows = \DB::table('missing_files_on_permanent_storage')
-                                ->where('item_id', $itemId)
-                                ->get();
-                        
-        $totalMissingRowsForItemCount = count($rows);
-        $totalFoundCount = 0;
-        $missingRowsArr = [];
-
-        foreach ($rows as $row) {
-
-            $fileBaseName = $this->_getFileBaseName($row);
-
-
-            $search = '/permanent_storage/legacy';
-            $replace = '/mnt/digitarchive';
-
-            $path = str_replace($search, $replace, dirname($row->file_path));
-            $path = str_replace(['master', 'comaster', 'derivatives/highres/images/', 'derivatives/screenres/images'], '%', $path);
-
-            // $patterns = ['/master/', '/comaster/', '/derivatives\/highres\/image\/(\d+)\/(\d+)/', '/derivatives\/screenres\/image\/(\d+)\/(\d+)/'];
-            // $path = preg_replace($patterns, '%', $path);
-
-
-            echo $path .'/'. $fileBaseName . "\n"; 
-            $missingRows = \DB::table('digit_archive')
-                                ->where('path', 'like', $path . '/' . $fileBaseName .'%')
-                                ->get();
-
-            if ($missingRows) {
-                foreach ($missingRows as $missingRow) {
-                    $missingRowsArr[$missingRow->file_name] = $missingRow->path;
-                }
-            }
-        }
-       
-        
-        $totalFoundCount = count($missingRowsArr);
-
-        dd($missingRowsArr);
-
-        if ($totalMissingRowsForItemCount <= $totalFoundCount) {
-            // All Images found on Digit Archive
-            return [
-                'status'            =>  1,
-                'album_standalone'  =>  $rows[0]->album_standalone,
-                'missingRows'        =>  $missingRowsArr,
-            ];
-        } else {
-            return false;
-        }
-    }
+    
 
     protected function _getFileBaseName($row)
     {
