@@ -978,14 +978,18 @@ class ItemRepository {
             $fileBaseName = $this->_getFileBaseName($row);
 
             $year = substr($imageRow->masterRoot ,-4);
+            $yearLessOne = (int)$year - 1;
 
             $yfk = '/' . $year .'/'. $imageRow->masterFolder . '/' . $imageRow->masterKey;
+            $yfkLessOne = '/' . $yearLessOne .'/'. $imageRow->masterFolder . '/' . $imageRow->masterKey;
 
             $masterSuffix = $imageRow->fromType != 'pdf' ? 'u' : '';
             $extension = $imageRow->fromType != 'pdf' ? 'tif' : 'pdf';
 
             $masterPath = '/mnt/digit_archive/master'. $yfk;
+            $masterPathLessOne = '/mnt/digit_archive/master'. $yfkLessOne;
             $comasterPath = '/mnt/digit_archive/comaster'. $yfk;
+            $comasterPathLessOne = '/mnt/digit_archive/comaster'. $yfkLessOne;
             $highresPath = '/mnt/digit_archive/derivatives/highres/image/'. $imageRow->wpath . '/'. $fileBaseName;
             $stdresPath = '/mnt/digit_archive/derivatives/screenres/image/'. $imageRow->wpath . '/'. $fileBaseName;
             
@@ -993,7 +997,9 @@ class ItemRepository {
 
             $missingRows = \DB::table('digit_archive')
                                 ->where('path', 'like', $masterPath.'%')
+                                ->orWhere('path', 'like', $masterPathLessOne.'%')
                                 ->orWhere('path', 'like', $comasterPath.'%')
+                                ->orWhere('path', 'like', $comasterPathLessOne.'%')
                                 ->orWhere('path', 'like', $highresPath.'%')
                                 ->orWhere('path', 'like', $stdresPath.'%')
                                 ->get();
