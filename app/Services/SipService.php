@@ -404,7 +404,8 @@ class SipService {
      */
     protected function _generateFolders($itemId) : string
     {
-        $sipFolder = public_path().'/downloads/sips';
+        // $sipFolder = public_path().'/downloads/sips';
+        $sipFolder = '/mnt/sip_sync/migration';
 
         $dcIdentifierFolder = $sipFolder.'/dc_identifier_'.$itemId;
         $contentFolder = $dcIdentifierFolder.'/content';
