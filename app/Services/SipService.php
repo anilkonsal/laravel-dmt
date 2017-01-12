@@ -455,13 +455,17 @@ class SipService {
         $zip = new \ZipArchive();
         $zipFilePath = $mainFolder .'/content/streams/files.zip';
 
-        $zip->open( $zipFilePath, \ZipArchive::CREATE);
+        $res = $zip->open( $zipFilePath, \ZipArchive::CREATE);
+        if ($res === TRUE) {
+            foreach ($filesArr as $filePath) {
+                $zip->addFile($filePath, basename($filePath));
+            }
 
-        foreach ($filesArr as $filePath) {
-            $zip->addFile($filePath, basename($filePath));
+            $zip->close();
+        } else {
+            echo "Zip file not created!";
         }
-
-        $zip->close();
+        
 
         dd($mainFolder, $filesArr);
 
