@@ -1094,7 +1094,7 @@ class ItemRepository {
                     }
                 }
 
-                dd($missingRowsArr);
+                
             
 
                 if (!(in_array(self::REP_FOLDER_MASTER, $repsFound) && in_array(self::REP_FOLDER_COMASTER, $repsFound) 
@@ -1107,7 +1107,7 @@ class ItemRepository {
 
         }
        
-        
+        dd($missingRowsArr);
         $totalFoundCount = count($missingRowsArr);
 
         if ($totalMissingRowsForItemCount <= $totalFoundCount) {
