@@ -82,7 +82,7 @@ class SipService {
     {
         $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile, $forceGeneration, $missing, $filesArr);
         // dd($filesArr);
-        dd($data);
+        
         if ($data === false) {
             return false;
         }
@@ -400,22 +400,6 @@ class SipService {
     }
 
 
-    public function generateDigitArchiveSips()
-    {
-        $missingRows = $this->_itemRepository->getAllMissingRows();
-
-        if (count($missingRows) < 1) {
-            return 0;
-        }
-
-        // dd($missingRows);
-
-        // foreach ($missingRows as $missingRow) {
-
-        // }
-
-    }
-
     /**
      * Function to generate the required folder structure for the Sips
      * @param  integer $itemId
@@ -432,7 +416,7 @@ class SipService {
         @mkdir($dcIdentifierFolder, 0775, true);
         @mkdir($contentFolder, 0775, true);
         @mkdir($streamFolder, 0775, true);
-
+        echo $dcIdentifierFolder;
         return $dcIdentifierFolder;
     }
 
