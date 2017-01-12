@@ -993,7 +993,6 @@ class ItemRepository {
             $highresPath = '/mnt/digit_archive/derivatives/highres/image/'. $imageRow->wpath . '/'. $fileBaseName;
             $stdresPath = '/mnt/digit_archive/derivatives/screenres/image/'. $imageRow->wpath . '/'. $fileBaseName;
             
-            // dd($masterPath, $comasterPath, $highresPath, $stdresPath);
 
             $missingRows = \DB::table('digit_archive')
                                 ->where('path', 'like', $masterPath.'%')
@@ -1057,14 +1056,18 @@ class ItemRepository {
                 $fileBaseName = $itemRow->masterKey;
 
                 $year = substr($itemRow->masterRoot ,-4);
+                $yearLessOne = (int)$year - 1;
 
                 $yfk = '/' . $year .'/'. $itemRow->masterFolder . '/' . $itemRow->masterKey;
+                $yfkLessOne = '/' . $yearLessOne .'/'. $itemRow->masterFolder . '/' . $itemRow->masterKey;
 
                 $masterSuffix = $itemRow->fromType != 'pdf' ? 'u' : '';
                 $extension = $itemRow->fromType != 'pdf' ? 'tif' : 'pdf';
 
                 $masterPath = '/mnt/digit_archive/master'. $yfk;
+                $masterPathLessOne = '/mnt/digit_archive/master'. $yfkLessOne;
                 $comasterPath = '/mnt/digit_archive/comaster'. $yfk;
+                $comasterPathLessOne = '/mnt/digit_archive/comaster'. $yfkLessOne;
                 $highresPath = '/mnt/digit_archive/derivatives/highres/image/'. $itemRow->wpath . '/'. $fileBaseName;
                 $stdresPath = '/mnt/digit_archive/derivatives/screenres/image/'. $itemRow->wpath . '/'. $fileBaseName;
                 
@@ -1072,7 +1075,9 @@ class ItemRepository {
 
                 $missingRows = \DB::table('digit_archive')
                                     ->where('path', 'like', $masterPath.'%')
+                                    ->orWhere('path', 'like', $masterPathLessOne.'%')
                                     ->orWhere('path', 'like', $comasterPath.'%')
+                                    ->orWhere('path', 'like', $comasterPathLessOne.'%')
                                     ->orWhere('path', 'like', $highresPath.'%')
                                     ->orWhere('path', 'like', $stdresPath.'%')
                                     ->get();
