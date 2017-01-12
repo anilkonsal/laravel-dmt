@@ -637,7 +637,7 @@ class ItemRepository {
             /*
             Check if the item has already been migrated, if yes, then skip this item
              */
-            $isMigrated[$itemId] = $this->_isMigrated($imageRow);
+            $isMigrated[$itemId] = $this->_isMigrated($imageRow, $albumAcmsRow, $missing);
             if($isMigrated[$itemId]) {
                 $this->_writeLog('<h3>Image already migrated, so skipping this Album</h3>');
                 return false;
@@ -1226,7 +1226,7 @@ class ItemRepository {
         /*
         Check if the item has already been migrated, if yes, then skip this item
          */
-        $isMigrated = $this->_isMigrated($imageRow);
+        $isMigrated = $this->_isMigrated($imageRow, $acmsRow, $missing);
         $this->_writeLog('Migrated: ' . ($isMigrated ? 'Yes' : 'No'));
 
 
@@ -1748,7 +1748,7 @@ class ItemRepository {
      * @param  EloquentRowObject  $imageItemRow The image row
      * @return boolean
      */
-    protected function _isMigrated($imageItemRow) : bool
+    protected function _isMigrated($imageItemRow, $acmsRow, $missing = false) : bool
     {
         $year = substr($imageItemRow->masterRoot ,-4);
 
@@ -1789,8 +1789,17 @@ class ItemRepository {
         $this->_writeLog('Hires already migrated: '. $highresCount);
         $this->_writeLog('Std Res already migrated: '. $stdresCount);
 
+        
+
 
         if ($masterCount || $comasterCount || $highresCount || $stdresCount) {
+            
+            if ($missing) {
+                \DB::table('missing_files_on_permanent_storage')
+                    ->where('item_id', $acmsRow->itemID)
+                    ->update(['not_deleted_reason' => 'partially or fully migrated to rosetta already']);
+            }
+
             return true;
         }
 
