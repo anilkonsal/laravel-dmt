@@ -458,7 +458,12 @@ class SipService {
         $res = $zip->open( $zipFilePath, \ZipArchive::CREATE);
         if ($res === TRUE) {
             foreach ($filesArr as $filePath => $fileName) {
-                $zip->addFile($filePath, $fileName);
+                if (preg_match('/(master|comaster|highres|screenres)/', $filePath, $matches)) {
+                        $subfolder = $matches[0];
+                    }
+                    $zip->addEmptyDir($subfolder);
+
+                $zip->addFile($filePath, $subfolder . '/'. $fileName);
             }
 
             $zip->close();
