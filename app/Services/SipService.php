@@ -457,8 +457,8 @@ class SipService {
 
         $res = $zip->open( $zipFilePath, \ZipArchive::CREATE);
         if ($res === TRUE) {
-            foreach ($filesArr as $filePath) {
-                $zip->addFile($filePath, basename($filePath));
+            foreach ($filesArr as $filePath => $fileName) {
+                $zip->addFile($filePath, $fileName);
             }
 
             $zip->close();
@@ -467,7 +467,7 @@ class SipService {
         }
         
 
-        dd($mainFolder, $filesArr);
+        dd($zipFilePath, $filesArr);
 
         return true;
     }
