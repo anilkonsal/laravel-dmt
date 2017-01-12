@@ -1178,7 +1178,7 @@ class ItemRepository {
                 return substr($fileName, 0, -2);
             }
             return $fileName;
-        } elseif ($row->representation === 'h' || $row->representation === 'l') {
+        } elseif ($row->representation === 'h' || $row->representation === 'l' || $row->representation === 'o') {
             return substr($fileName, 0, -1);
         }
     }
