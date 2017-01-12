@@ -82,7 +82,7 @@ class SipService {
     {
         $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile, $forceGeneration, $missing, $filesArr);
         // dd($filesArr);
-        
+        var_dump($data);
         if ($data === false) {
             return false;
         }
@@ -416,7 +416,7 @@ class SipService {
         @mkdir($dcIdentifierFolder, 0775, true);
         @mkdir($contentFolder, 0775, true);
         @mkdir($streamFolder, 0775, true);
-        echo $dcIdentifierFolder;
+        // echo $dcIdentifierFolder;
         return $dcIdentifierFolder;
     }
 
