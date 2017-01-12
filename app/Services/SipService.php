@@ -153,6 +153,8 @@ class SipService {
             //     '/var/www/html/digit_archive_images/a3864006h.jpg',
             // ];
 
+            dd($filesArr);
+
             $this->_makeFilesZip($mainFolder, $filesArr);
         }
 
