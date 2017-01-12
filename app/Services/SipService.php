@@ -61,9 +61,7 @@ class SipService {
         
         $filesArr = $cdata['missingRows'];
         
-        
-
-        $mainFolder = $this->_generateFolders($itemId);
+        // $mainFolder = $this->_generateFolders($itemId);
         
         if ( $cdata['album_standalone'] == 's' ) {
             // Call the generate Sip for Missing Standalone SIP
@@ -81,8 +79,7 @@ class SipService {
     public function generateItemSip($itemId, $logFile, $forceGeneration = false, $missing = false, $filesArr = [])
     {
         $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile, $forceGeneration, $missing, $filesArr);
-        // dd($filesArr);
-        var_dump($data);
+        
         if ($data === false) {
             return false;
         }
