@@ -463,7 +463,7 @@ class SipService {
                     }
                     $zip->addEmptyDir($subfolder);
 
-                $zip->addFile($filePath, $subfolder . '/'. $fileName);
+                $zip->addFile($filePath, $fileName);
             }
 
             $zip->close();
