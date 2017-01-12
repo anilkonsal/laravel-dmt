@@ -984,10 +984,10 @@ class ItemRepository {
             $masterSuffix = $imageRow->fromType != 'pdf' ? 'u' : '';
             $extension = $imageRow->fromType != 'pdf' ? 'tif' : 'pdf';
 
-            $masterPath = '/mnt/digitarchive/master'. $yfk;
-            $comasterPath = '/mnt/digitarchive/comaster'. $yfk;
-            $highresPath = '/mnt/digitarchive/derivatives/highres/image/'. $imageRow->wpath . '/'. $fileBaseName;
-            $stdresPath = '/mnt/digitarchive/derivatives/screenres/image/'. $imageRow->wpath . '/'. $fileBaseName;
+            $masterPath = '/mnt/digit_archive/master'. $yfk;
+            $comasterPath = '/mnt/digit_archive/comaster'. $yfk;
+            $highresPath = '/mnt/digit_archive/derivatives/highres/image/'. $imageRow->wpath . '/'. $fileBaseName;
+            $stdresPath = '/mnt/digit_archive/derivatives/screenres/image/'. $imageRow->wpath . '/'. $fileBaseName;
             
             // dd($masterPath, $comasterPath, $highresPath, $stdresPath);
 
@@ -1057,10 +1057,10 @@ class ItemRepository {
                 $masterSuffix = $itemRow->fromType != 'pdf' ? 'u' : '';
                 $extension = $itemRow->fromType != 'pdf' ? 'tif' : 'pdf';
 
-                $masterPath = '/mnt/digitarchive/master'. $yfk;
-                $comasterPath = '/mnt/digitarchive/comaster'. $yfk;
-                $highresPath = '/mnt/digitarchive/derivatives/highres/image/'. $itemRow->wpath . '/'. $fileBaseName;
-                $stdresPath = '/mnt/digitarchive/derivatives/screenres/image/'. $itemRow->wpath . '/'. $fileBaseName;
+                $masterPath = '/mnt/digit_archive/master'. $yfk;
+                $comasterPath = '/mnt/digit_archive/comaster'. $yfk;
+                $highresPath = '/mnt/digit_archive/derivatives/highres/image/'. $itemRow->wpath . '/'. $fileBaseName;
+                $stdresPath = '/mnt/digit_archive/derivatives/screenres/image/'. $itemRow->wpath . '/'. $fileBaseName;
                 
                 // dd($masterPath, $comasterPath, $highresPath, $stdresPath);
 
