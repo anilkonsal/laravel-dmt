@@ -82,12 +82,11 @@ class SipService {
     {
         $data = $this->_itemRepository->getSipDataForStandAlone($itemId, $logFile, $forceGeneration, $missing, $filesArr);
         // dd($filesArr);
-        // dd($data);
+        dd($data);
         if ($data === false) {
             return false;
         }
         
-        dd ($data);
 
         $mainFolder = $this->_generateFolders($itemId);
 
