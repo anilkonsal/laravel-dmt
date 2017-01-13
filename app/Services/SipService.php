@@ -71,7 +71,7 @@ class SipService {
             $this->generateAlbumItemSip($itemId, $logFile, $forceGeneration, true, $filesArr);
         }
         
-        // $this->_itemRepository->deleteRowsFormMissingOnPermanentStorage($itemId);
+        $this->_itemRepository->deleteRowsFormMissingOnPermanentStorage($itemId);
 
     }
 
