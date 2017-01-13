@@ -434,8 +434,13 @@ class SipService {
                         $subfolder = $matches[0];
                     }
                     $zip->addEmptyDir($subfolder);
-
-                $zip->addFile($filePath, $fileName);
+                if (is_readable($filePath)) {
+                    echo "Adding File: " . $filePath ."\n"; 
+                    $zip->addFile($filePath, $fileName);
+                } else {
+                    echo "File: " . $filePath ." is not readable so skipping it!\n";
+                }
+                
             }
 
             $zip->close();
