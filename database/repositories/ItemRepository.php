@@ -963,6 +963,10 @@ class ItemRepository {
             $row = $rows[0];
 
             $acmsRow = \DB::table('item')->where('itemId', $itemId)->first();
+            $itemTextRow = \DB::table('itemtext')
+                        ->where('itemID', $itemId)->first();
+            
+            
 
             $digitalId = $acmsRow->fromKey;
 
@@ -990,8 +994,14 @@ class ItemRepository {
             $masterPathLessOne = '/mnt/digit_archive/master'. $yfkLessOne;
             $comasterPath = '/mnt/digit_archive/comaster'. $yfk;
             $comasterPathLessOne = '/mnt/digit_archive/comaster'. $yfkLessOne;
-            $highresPath = '/mnt/digit_archive/derivatives/highres/image/'. $imageRow->wpath . '/'. $fileBaseName;
-            $stdresPath = '/mnt/digit_archive/derivatives/screenres/image/'. $imageRow->wpath . '/'. $fileBaseName;
+            
+            if ($itemTextRow->cb == 'Image') {
+                $resPath = '/mnt/digit_archive/derivatives/screenres/image/'. $imageRow->wpath . '/'. $fileBaseName;    
+            } else {
+                $resPath = '/mnt/digit_archive/derivatives/highres/image/'. $imageRow->wpath . '/'. $fileBaseName;
+            }
+            
+            
             
 
             $missingRows = \DB::table('digit_archive')
@@ -999,8 +1009,7 @@ class ItemRepository {
                                 ->orWhere('path', 'like', $masterPathLessOne.'%')
                                 ->orWhere('path', 'like', $comasterPath.'%')
                                 ->orWhere('path', 'like', $comasterPathLessOne.'%')
-                                ->orWhere('path', 'like', $highresPath.'%')
-                                ->orWhere('path', 'like', $stdresPath.'%')
+                                ->orWhere('path', 'like', $resPath.'%')
                                 ->get();
 
 
@@ -1028,6 +1037,7 @@ class ItemRepository {
 
             $itemTextRow = \DB::table('itemtext')
                         ->where('itemID', $itemId)->first();
+            //dd($itemTextRow->cb);
 
             $albumId = $itemTextRow->album_id;
 
@@ -1068,18 +1078,22 @@ class ItemRepository {
                 $masterPathLessOne = '/mnt/digit_archive/master'. $yfkLessOne;
                 $comasterPath = '/mnt/digit_archive/comaster'. $yfk;
                 $comasterPathLessOne = '/mnt/digit_archive/comaster'. $yfkLessOne;
-                $highresPath = '/mnt/digit_archive/derivatives/highres/image/'. $itemRow->wpath . '/'. $fileBaseName;
-                $stdresPath = '/mnt/digit_archive/derivatives/screenres/image/'. $itemRow->wpath . '/'. $fileBaseName;
+
+                if ($itemTextRow->cb == 'Image') {
+                    $resPath = '/mnt/digit_archive/derivatives/screenres/image/'. $itemRow->wpath . '/'. $fileBaseName;
+                } else {
+                    $resPath = '/mnt/digit_archive/derivatives/highres/image/'. $itemRow->wpath . '/'. $fileBaseName;
+                }
+
                 
-                // dd($masterPath, $comasterPath, $highresPath, $stdresPath);
+                // dd($masterPath, $comasterPath, $resPath);
 
                 $missingRows = \DB::table('digit_archive')
                                     ->where('path', 'like', $masterPath.'%')
                                     ->orWhere('path', 'like', $masterPathLessOne.'%')
                                     ->orWhere('path', 'like', $comasterPath.'%')
                                     ->orWhere('path', 'like', $comasterPathLessOne.'%')
-                                    ->orWhere('path', 'like', $highresPath.'%')
-                                    ->orWhere('path', 'like', $stdresPath.'%')
+                                    ->orWhere('path', 'like', $resPath.'%')
                                     ->get();
 
                                     

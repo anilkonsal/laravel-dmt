@@ -71,7 +71,7 @@ class SipService {
             $this->generateAlbumItemSip($itemId, $logFile, $forceGeneration, true, $filesArr);
         }
         
-        $this->_itemRepository->deleteRowsFormMissingOnPermanentStorage($itemId);
+        // $this->_itemRepository->deleteRowsFormMissingOnPermanentStorage($itemId);
 
     }
 
@@ -148,7 +148,7 @@ class SipService {
         ]);
 
         if ($missing) {
-            $this->_makeFilesZip($mainFolder, $filesArr);
+            $this->copyFilesToRepFoldersForSIP($mainFolder, $filesArr);
         }
         
         file_put_contents($mainFolder.'/content/ie.xml', $xml);
@@ -176,7 +176,7 @@ class SipService {
 
         if ($missing) {
 
-            $this->_makeFilesZip($mainFolder, $filesArr);
+            $this->copyFilesToRepFoldersForSIP($mainFolder, $filesArr);
         }
 
 
@@ -416,6 +416,25 @@ class SipService {
         @mkdir($streamFolder, 0775, true);
         // echo $dcIdentifierFolder;
         return $dcIdentifierFolder;
+    }
+
+    protected function copyFilesToRepFoldersForSIP($mainFolder, $filesArr) 
+    {
+        if (empty($filesArr)) {
+            throw new \Exception('Cannot create the files.zip file FilesArr is empty!');
+        }
+
+        foreach ($filesArr as $filePath => $fileName) {
+            if (preg_match('/(master|comaster|highres|screenres)/', $filePath, $matches)) {
+                $repFolder = $mainFolder.'/content/streams/'.$matches[0];
+                if (!file_exists($repFolder)) {
+                    mkdir($repFolder, 2775);
+                }
+                copy($filePath, $repFolder);
+            }
+        }
+        return true;
+
     }
 
     protected function _makeFilesZip($mainFolder, $filesArr = [])
