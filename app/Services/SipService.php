@@ -430,7 +430,7 @@ class SipService {
                 if (!file_exists($repFolder)) {
                     mkdir($repFolder, 2775);
                 }
-                copy($filePath, $repFolder.'/'.$fileName);
+                copy($filePath, dirname($repFolder).'/'.$fileName);
             }
         }
         return true;
