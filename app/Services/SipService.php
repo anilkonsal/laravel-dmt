@@ -283,7 +283,7 @@ class SipService {
      */
     protected function _generateXMLForAlbumSip($data)
     {
-        // dd($data);
+        
         $itemData = $data[array_keys($data)[0]];
 
         $ieDmdXml = view('xml.sip.album.partials.ie-dmd', [
@@ -541,7 +541,7 @@ class SipService {
     /**
     
     */
-    public function generateMilleniumStandAloneSip($folder1, $folder2, $imageName, $recordXml)
+    public function generateMilleniumStandAloneSip($folder1, $folder2, $imageName, $recordXml, $forceGeneration)
     {
         $itemData = $this->_itemRepository->getItemDataForMilleniumStandAlone($folder1, $folder2, $imageName);
         $itemId = $itemData['itemID'];
@@ -551,19 +551,21 @@ class SipService {
         $logFile = public_path().'/downloads/sips/'.$logFileName;
         $logFileUrl = '/downloads/sips/'.$logFileName;
         
-        $this->generateItemSipMillenium($itemId, $recordXml, $logFile, 1);
+        $this->generateItemSipMillenium($itemId, $recordXml, $logFile, $forceGeneration);
         
     }
 
-    public function generateMilleniumAlbumSip($itemId, $recordXml)
+    public function generateMilleniumAlbumSip($itemId, $recordXml, $forceGeneration)
     {
 
         $logFileName = 'log-'.$itemId.'-album-millenium.html';
 
+        // dd($logFileName);
+
         $logFile = public_path().'/downloads/sips/'.$logFileName;
         $logFileUrl = '/downloads/sips/'.$logFileName;
         
-        $this->generateMilleniumAlbumSipItem($itemId, $recordXml, $logFile, 1);
+        $this->generateMilleniumAlbumSipItem($itemId, $recordXml, $logFile, $forceGeneration);
         
     }
 

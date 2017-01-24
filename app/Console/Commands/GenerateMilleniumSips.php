@@ -19,7 +19,7 @@ class GenerateMilleniumSips extends Command
      *
      * @var string
      */
-    protected $description = 'This command generates the SIPs for millenium records.';
+    protected $description = 'This command generates the SIPs for millenium records by reading an XML file containing MARCs';
 
     /**
      * Create a new command instance.
@@ -48,31 +48,49 @@ class GenerateMilleniumSips extends Command
 
         $xml = simplexml_load_file($xmlPath);
 
-        $index = 6;
+        $records = $xml->xpath('//record');
 
-        $imgUrl = $xml->xpath("//record[".$index."]/datafield[@tag=856]")[0]->subfield[1]->__toString();
-        $recordXml = $xml->xpath('//record['.$index.']')[0];
+        $totalRecords = count($records);
 
-        /*
-        If 'album' word is found in the url, then this is an Album record, else
-        this is a standalone record.
-        */
-        if (strpos($imgUrl, 'album') === false) {
-            $path = parse_url($imgUrl, PHP_URL_PATH);
-            
-            if(preg_match('/(\d+)\/(\d+)\/(\w+)/', $path, $matches)) {
-                list($fullMatch, $folder1, $folder2, $imageName) = $matches;    
-                $sipService->generateMilleniumStandAloneSip($folder1, $folder2, $imageName, $recordXml);
-            }
+        for($i=1; $i<= $totalRecords; $i++) {
+            // if ($i <= 5665){
+            //     continue;
+            // }
+            echo "i: $i\n";
+            $recordXml = $xml->xpath('//record['.$i.']')[0];
 
-        } else {
-            // http://acms.sl.nsw.gov.au/album/albumview.aspx?itemID=1025703&acmsid=0
-            parse_str(parse_url($imgUrl, PHP_URL_QUERY), $arguments);
-            if (!empty($arguments)) {
-                $itemId = $arguments['itemID'];
-                $sipService->generateMilleniumAlbumSip($itemId, $recordXml);
+            $imgUrlNode = $xml->xpath("//record[".$i."]/datafield[@tag=856]/subfield[@code='u']");
+            if (!$imgUrlNode) {
+                $imgUrlNode = $xml->xpath("//record[".$i."]/datafield[@tag=856]/subfield")[0];
+                $imgUrl = $imgUrlNode->__toString();
+            } else {
+                $imgUrl = $imgUrlNode[0]->__toString();
             }
             
+            
+            /*
+            If 'album' word is found in the url, then this is an Album record, else
+            this is a standalone record.
+            */
+            if (strpos($imgUrl, 'album') === false) {
+                $path = parse_url($imgUrl, PHP_URL_PATH);
+                if(preg_match('/(\d+)\/(\d+)\/(\w+)/', $path, $matches)) {
+                    list($fullMatch, $folder1, $folder2, $imageName) = $matches;    
+                    $sipService->generateMilleniumStandAloneSip($folder1, $folder2, $imageName, $recordXml, $forceGeneration);
+                }
+            } else {
+                parse_str(parse_url($imgUrl, PHP_URL_QUERY), $arguments);
+                // dd($arguments);
+                if (!empty($arguments)) {
+                    if (array_key_exists('itemID', $arguments)) {
+                        $itemId = $arguments['itemID'];
+                    } elseif (array_key_exists('itemid', $arguments)) {
+                        $itemId = $arguments['itemid'];
+                    }                  
+                    $sipService->generateMilleniumAlbumSip($itemId, $recordXml, $forceGeneration);
+                }
+                
+            }
         }
 
     }

@@ -692,6 +692,8 @@ class ItemRepository {
      */
     public function getSipDataForMilleniumAlbum($itemId, $recordXml, $logFile, $forceGeneration = false)
     {
+        
+
         $data = [];
         $isMigrated = false;
 
@@ -710,10 +712,6 @@ class ItemRepository {
                         ->where('itemID', $itemId)->first();
 
         $albumId = $itemId;
-
-        
-
-        $supress = $itemTextRow->cb;
 
         $imageRows = \DB::table('item')
                         ->join('collection', 'item.itemID', '=', 'collection.itemID')
@@ -755,6 +753,13 @@ class ItemRepository {
             return false;
         }
         
+        if (!$itemTextRow) {
+            echo "Item ID: $itemId \n";
+            file_put_contents(public_path().'/downloads/millenium-items-with-missing-itemtext-row.txt', "$itemId\r\n", FILE_APPEND);
+            return false;
+        }
+
+        $supress = $itemTextRow->cb;
 
         $collectionRows = \DB::table('collection')
                                 ->where('collectionID', $albumId)
@@ -829,6 +834,9 @@ class ItemRepository {
         }
 
         
+        if (empty($data)) {
+            return false;
+        }
         
         /*
         If all the images are found for this album, mark this album as migrated
@@ -1113,6 +1121,7 @@ class ItemRepository {
 
         $fileName = $imageRow->itemKey;
 
+
         $artist = '';
 
         if(!empty($itemTextRow->at)) {
@@ -1136,7 +1145,10 @@ class ItemRepository {
 
         
         $identifier = $recordXml->xpath('controlfield[@tag=001]')[0]->__toString();
-        $relation = $recordXml->xpath('datafield[@tag=019]/subfield[@code="a"]')[0]->__toString();
+        $relationNode = $recordXml->xpath('datafield[@tag=019]/subfield[@code="a"]');
+        
+        $relation = $relationNode ? $relationNode[0]->__toString() : null;
+        
         $titleXml = $recordXml->xpath('datafield[@tag=245]')[0];
 
         $titleArr[] = $titleXml->xpath('subfield[@code="a"]')[0]->__toString();
@@ -1207,6 +1219,7 @@ class ItemRepository {
 
         $creator = implode(' ', $creatorArr);
         
+        $sourceArr = [];
         $sources = $recordXml->xpath('datafield[@tag="984"]/subfield[@code="c"]');
         if (!empty($sources)) {
             foreach($sources as $source) {
@@ -2041,7 +2054,11 @@ class ItemRepository {
                         ->where('itemID', $itemId)
                         ->first();
 
-        
+        if (!$itemTextRow) {
+            echo "Item ID: $itemId \n";
+            file_put_contents(public_path().'/downloads/millenium-items-with-missing-itemtext-row.txt', "$itemId\r\n", FILE_APPEND);
+            return false;
+        }
 
 
         if (!empty($itemTextRow)) {
@@ -2082,7 +2099,15 @@ class ItemRepository {
             // dd($recordXml);
 
             $identifier = $recordXml->xpath('controlfield[@tag=001]')[0]->__toString();
-            $relation = $recordXml->xpath('datafield[@tag=019]/subfield[@code="a"]')[0]->__toString();
+            $relationNode = $recordXml->xpath('datafield[@tag=019]/subfield[@code="a"]');
+            
+            if ($relationNode) {
+                $relation = $relationNode[0]->__toString();
+            } else {
+                $relation = '';
+            }
+
+            
             $titleXml = $recordXml->xpath('datafield[@tag=245]')[0];
 
             $titleArr[] = $titleXml->xpath('subfield[@code="a"]')[0]->__toString();
@@ -2153,6 +2178,7 @@ class ItemRepository {
 
             $creator = implode(' ', $creatorArr);
             
+            $sourceArr = [];
             $sources = $recordXml->xpath('datafield[@tag="984"]/subfield[@code="c"]');
             if (!empty($sources)) {
                 foreach($sources as $source) {
@@ -2164,7 +2190,13 @@ class ItemRepository {
             $typeCode = $typeText[6];
             $type = $this->_getMilleniumDcType($typeCode);
 
-            $date = $recordXml->xpath('datafield[@tag=260]/subfield[@code="c"]')[0]->__toString();
+            $dateNode = $recordXml->xpath('datafield[@tag=260]/subfield[@code="c"]');
+            if ($dateNode) {
+                $date = $dateNode[0]->__toString();
+            } else {
+                $date = '';
+            }
+            
 
 
             $fidDmdMasterTitleNode = $recordXml->xpath('datafield[@tag=245]')[0];
@@ -2590,6 +2622,7 @@ class ItemRepository {
                     ->insert([
                         'item_id'           =>  $itemId,
                         'file_path'         =>  $filePath,
+                        'file_name'         =>  basename($filePath),
                         'representation'    =>  $representation,
                         'album_standalone'  =>  $albumStandalone
                     ]);

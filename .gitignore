@@ -4,6 +4,7 @@
 /.idea
 public/downloads/csvs
 public/downloads/sips
+public/downloads/millenium-items-with-missing-itemtext-row.txt
 Homestead.json
 Homestead.yaml
 .env
