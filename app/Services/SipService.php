@@ -85,7 +85,7 @@ class SipService {
         }
         
 
-        $mainFolder = $this->_generateFolders($itemId);
+        $mainFolder = $this->_generateFolders($itemId, $missing);
 
         $xml = view('xml.sip.standalone', [
             'ie_dmd_identifier'     => $data['ie_dmd_identifier'],
@@ -96,6 +96,7 @@ class SipService {
             'ie_dmd_accessRights'   => $data['ie_dmd_accessRights'],
             'ie_dmd_date'           => $data['ie_dmd_date'],
             'ie_dmd_isFormatOf'     => $data['ie_dmd_isFormatOf'],
+            'ie_dmd_isReferencedBy' => $data['ie_dmd_isReferencedBy'],
 
             'fid1_1_dmd_title'      => $data['fid1_1_dmd_title'],
             'fid1_1_dmd_source'     => $data['fid1_1_dmd_source'],
@@ -155,6 +156,79 @@ class SipService {
         return $mainFolder;
     }
 
+
+    public function generateItemSipMillenium($itemId, $recordXml, $logFile, $forceGeneration = false)
+    {
+        $data = $this->_itemRepository->getSipDataForStandAloneMillenium($itemId, $recordXml, $logFile, $forceGeneration);
+        
+        if ($data === false) {
+            return false;
+        }   
+
+        $mainFolder = $this->_generateFolders($itemId);
+
+        $xml = view('xml.sip.standalone', [
+            'ie_dmd_identifier'     => $data['ie_dmd_identifier'],
+            'ie_dmd_title'          => $data['ie_dmd_title'],
+            'ie_dmd_relation'       => $data['ie_dmd_relation'],
+            'ie_dmd_creator'        => $data['ie_dmd_creator'],
+            'ie_dmd_source'         => $data['ie_dmd_source'],
+            'ie_dmd_type'           => $data['ie_dmd_type'],
+            'ie_dmd_accessRights'   => $data['ie_dmd_accessRights'],
+            'ie_dmd_date'           => $data['ie_dmd_date'],
+            'ie_dmd_isFormatOf'     => $data['ie_dmd_isFormatOf'],
+            'ie_dmd_isReferencedBy' => $data['ie_dmd_isReferencedBy'],
+
+            'fid1_1_dmd_title'      => $data['fid1_1_dmd_title'],
+            'fid1_1_dmd_source'     => $data['fid1_1_dmd_source'],
+            'fid1_1_dmd_description'=> $data['fid1_1_dmd_description'],
+            'fid1_1_dmd_date'       => $data['fid1_1_dmd_date'],
+            'fid1_1_dmd_isFormatOf' => $data['fid1_1_dmd_isFormatOf'],
+
+            'fid1_2_dmd_title'      => $data['fid1_2_dmd_title'],
+            'fid1_2_dmd_source'     => $data['fid1_2_dmd_source'],
+            'fid1_2_dmd_description'=> $data['fid1_2_dmd_description'],
+            'fid1_2_dmd_date'       => $data['fid1_2_dmd_date'],
+            'fid1_2_dmd_isFormatOf' => $data['fid1_2_dmd_isFormatOf'],
+
+            'fid1_3_dmd_title'      => $data['fid1_3_dmd_title'],
+            'fid1_3_dmd_source'     => $data['fid1_3_dmd_source'],
+            'fid1_3_dmd_description'=> $data['fid1_3_dmd_description'],
+            'fid1_3_dmd_date'       => $data['fid1_3_dmd_date'],
+            'fid1_3_dmd_isFormatOf' => $data['fid1_3_dmd_isFormatOf'],
+
+            'fid1_1_amd_fileOriginalPath'   => $data['fid1_1_amd_fileOriginalPath'],
+            'fid1_1_amd_fileOriginalName'   => $data['fid1_1_amd_fileOriginalName'],
+            'fid1_1_amd_label'              => $data['fid1_1_amd_label'],
+            'fid1_1_amd_groupID'            => $data['fid1_1_amd_groupID'],
+
+            'fid1_2_amd_fileOriginalPath'   => $data['fid1_2_amd_fileOriginalPath'],
+            'fid1_2_amd_fileOriginalName'   => $data['fid1_2_amd_fileOriginalName'],
+            'fid1_2_amd_label'              => $data['fid1_2_amd_label'],
+            'fid1_2_amd_groupID'            => $data['fid1_2_amd_groupID'],
+
+            'fid1_3_amd_fileOriginalPath'   => $data['fid1_3_amd_fileOriginalPath'],
+            'fid1_3_amd_fileOriginalName'   => $data['fid1_3_amd_fileOriginalName'],
+            'fid1_3_amd_label'              => $data['fid1_3_amd_label'],
+            'fid1_3_amd_groupID'            => $data['fid1_3_amd_groupID'],
+
+            'rep1_amd_url'                  => $data['rep1_amd_url'],
+            'rep2_amd_url'                  => $data['rep2_amd_url'],
+            'rep3_amd_url'                  => $data['rep3_amd_url'],
+
+            'rep1_1_label'                  => $data['rep1_1_label'],
+            'rep2_1_label'                  => $data['rep2_1_label'],
+            'rep3_1_label'                  => $data['rep3_1_label'],
+
+            'rep1_amd_rights'               => $data['rep1_amd_rights'],
+            'rep2_amd_rights'               => $data['rep2_amd_rights'],
+            'rep3_amd_rights'               => $data['rep3_amd_rights'],
+        ]);
+
+        file_put_contents($mainFolder.'/content/ie.xml', $xml);
+        return $mainFolder;
+    }
+
     /**
      *
      * Function to generate the sip for an individual album and its images
@@ -171,7 +245,7 @@ class SipService {
         if ($data === false) {
             return false;
         }
-        $mainFolder = $this->_generateFolders($itemId);
+        $mainFolder = $this->_generateFolders($itemId, $missing);
         $xml = $this->_generateXMLForAlbumSip($data);
 
         if ($missing) {
@@ -183,6 +257,24 @@ class SipService {
         file_put_contents($mainFolder.'/content/ie.xml', $xml);
         return $mainFolder;
     }
+
+
+    public function generateMilleniumAlbumSipItem($itemId, $recordXml, $logFile, $generateAlbumSip = false) {
+
+        $data = $this->_itemRepository->getSipDataForMilleniumAlbum($itemId, $recordXml ,$logFile, $generateAlbumSip);
+
+        if ($data === false) {
+            return false;
+        }
+        $mainFolder = $this->_generateFolders($itemId);
+        $xml = $this->_generateXMLForAlbumSip($data);
+
+        file_put_contents($mainFolder.'/content/ie.xml', $xml);
+        return $mainFolder;
+    }
+
+    
+
 
     /**
      * Function to generate the XML for Album SIP
@@ -198,11 +290,13 @@ class SipService {
             'ie_dmd_identifier'     => $itemData['ie_dmd_identifier'],
             'ie_dmd_title'          => $itemData['ie_dmd_title'],
             'ie_dmd_creator'        => $itemData['ie_dmd_creator'],
+            'ie_dmd_relation'       => $itemData['ie_dmd_relation'],
             'ie_dmd_source'         => $itemData['ie_dmd_source'],
             'ie_dmd_type'           => $itemData['ie_dmd_type'],
             'ie_dmd_accessRights'   => $itemData['ie_dmd_accessRights'],
             'ie_dmd_date'           => $itemData['ie_dmd_date'],
             'ie_dmd_isFormatOf'     => $itemData['ie_dmd_isFormatOf'],
+            'ie_dmd_isReferencedBy' => $itemData['ie_dmd_isReferencedBy'],
         ])->render();
 
         $fidDmdXml = '';
@@ -324,6 +418,7 @@ class SipService {
                     $folders[] = $result;
                 }
             }
+
         }
 
         
@@ -402,10 +497,16 @@ class SipService {
      * @param  integer $itemId
      * @return array Paths of the Main folder;
      */
-    protected function _generateFolders($itemId) : string
+    protected function _generateFolders($itemId, $missing = False) : string
     {
-        // $sipFolder = public_path().'/downloads/sips';
-        $sipFolder = '/mnt/sip_sync/migration';
+        
+        $sipFolder = public_path().'/downloads/sips';
+        
+        if($missing) {
+            $sipFolder = '/mnt/sip_sync/migration';
+        }
+
+        
 
         $dcIdentifierFolder = $sipFolder.'/dc_identifier_'.$itemId;
         $contentFolder = $dcIdentifierFolder.'/content';
@@ -435,6 +536,35 @@ class SipService {
         }
         return true;
 
+    }
+
+    /**
+    
+    */
+    public function generateMilleniumStandAloneSip($folder1, $folder2, $imageName, $recordXml)
+    {
+        $itemData = $this->_itemRepository->getItemDataForMilleniumStandAlone($folder1, $folder2, $imageName);
+        $itemId = $itemData['itemID'];
+
+        $logFileName = 'log-'.$itemId.'-standalone-millenium.html';
+
+        $logFile = public_path().'/downloads/sips/'.$logFileName;
+        $logFileUrl = '/downloads/sips/'.$logFileName;
+        
+        $this->generateItemSipMillenium($itemId, $recordXml, $logFile, 1);
+        
+    }
+
+    public function generateMilleniumAlbumSip($itemId, $recordXml)
+    {
+
+        $logFileName = 'log-'.$itemId.'-album-millenium.html';
+
+        $logFile = public_path().'/downloads/sips/'.$logFileName;
+        $logFileUrl = '/downloads/sips/'.$logFileName;
+        
+        $this->generateMilleniumAlbumSipItem($itemId, $recordXml, $logFile, 1);
+        
     }
 
     protected function _makeFilesZip($mainFolder, $filesArr = [])
@@ -561,7 +691,7 @@ class SipService {
             return 'PRESERVATION MASTER';
         } elseif ($i == 2) {
             return 'COMASTER';
-        } elseif ($i ==3) {
+        } elseif ($i == 3) {
             return 'SCREEN';
         }
     }

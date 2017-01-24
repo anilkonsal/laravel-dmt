@@ -22,6 +22,7 @@ class Kernel extends ConsoleKernel
         Commands\GenerateCSVSips::class,
         Commands\GenerateDigitArchiveSips::class,
         Commands\GenerateDigitArchiveSip::class,
+        Commands\GenerateMilleniumSips::class,
     ];
 
     /**
