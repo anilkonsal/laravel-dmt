@@ -52,10 +52,11 @@ class GenerateMilleniumSips extends Command
 
         $totalRecords = count($records);
 
+       
+
+
         for($i=1; $i<= $totalRecords; $i++) {
-            // if ($i <= 5665){
-            //     continue;
-            // }
+          
             echo "i: $i\n";
             $recordXml = $xml->xpath('//record['.$i.']')[0];
 
@@ -67,6 +68,7 @@ class GenerateMilleniumSips extends Command
                 $imgUrl = $imgUrlNode[0]->__toString();
             }
             
+
             
             /*
             If 'album' word is found in the url, then this is an Album record, else
@@ -80,13 +82,12 @@ class GenerateMilleniumSips extends Command
                 }
             } else {
                 parse_str(parse_url($imgUrl, PHP_URL_QUERY), $arguments);
-                // dd($arguments);
                 if (!empty($arguments)) {
                     if (array_key_exists('itemID', $arguments)) {
                         $itemId = $arguments['itemID'];
                     } elseif (array_key_exists('itemid', $arguments)) {
                         $itemId = $arguments['itemid'];
-                    }                  
+                    }
                     $sipService->generateMilleniumAlbumSip($itemId, $recordXml, $forceGeneration);
                 }
                 

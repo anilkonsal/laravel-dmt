@@ -560,8 +560,6 @@ class SipService {
 
         $logFileName = 'log-'.$itemId.'-album-millenium.html';
 
-        // dd($logFileName);
-
         $logFile = public_path().'/downloads/sips/'.$logFileName;
         $logFileUrl = '/downloads/sips/'.$logFileName;
         

@@ -1269,18 +1269,18 @@ class ItemRepository {
         $data['fid1_1_dmd_source'] = $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->masterRoot . "/" . $imageRow->masterFolder . "/" . $imageRow->masterKey . "u." . $imageRow->fromType;
         $data['fid1_1_dmd_identifier'] = $imageRow->itemID;
-        $data['fid1_1_dmd_date'] = $this->_getDatePart($itemTextRow->ah, null);
+        $data['fid1_1_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah, null);
         $data['fid1_1_dmd_tableOfContents'] = $collectionRow->itemIndex;
-        $data['fid1_1_dmd_isFormatOf'] = !empty($itemTextRow->cl) ? $itemTextRow->cl : $itemTextRow->bk;
+        $data['fid1_1_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
         $data['fid1_1_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_1_dmd_isFormatOf']);
 
         $data['fid1_2_dmd_title'] = $fidDmdMasterTitle;
         $data['fid1_2_dmd_source'] = $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->fromRoot . "/" . $imageRow->fromFolder . "/" . $imageRow->fromKey . "." . $imageRow->fromType;
         $data['fid1_2_dmd_identifier'] = $imageRow->itemID;
-        $data['fid1_2_dmd_date'] = $this->_getDatePart($itemTextRow->ah, null);
+        $data['fid1_2_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah, null);
         $data['fid1_2_dmd_tableOfContents'] = $collectionRow->itemIndex;
-        $data['fid1_2_dmd_isFormatOf'] = !empty($itemTextRow->cl) ? $itemTextRow->cl : $itemTextRow->bk;
+        $data['fid1_2_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
         $data['fid1_2_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_2_dmd_isFormatOf']);
 
         $data['fid1_3_dmd_title'] = $fidDmdMasterTitle;
@@ -1288,9 +1288,9 @@ class ItemRepository {
         $data['fid1_3_dmd_source'] = $imageRow->wroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
         $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/". $imageRow->wroot .'/' . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
         $data['fid1_3_dmd_identifier'] = $imageRow->itemID;
-        $data['fid1_3_dmd_date'] = $this->_getDatePart($itemTextRow->ah, null);
+        $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah, null);
         $data['fid1_3_dmd_tableOfContents'] = $collectionRow->itemIndex;
-        $data['fid1_3_dmd_isFormatOf'] = !empty($itemTextRow->cl) ? $itemTextRow->cl : $itemTextRow->bk;
+        $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
         $data['fid1_3_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_3_dmd_isFormatOf']);
 
         $data['fid1_3_amd_fileOriginalPath'] = "/permanent_storage/legacy/derivatives/highres/image/" . $imageRow->wpath . "/" . $imageRow->itemKey . "h." . $imageRow->wtype;
@@ -1306,8 +1306,8 @@ class ItemRepository {
             $data['fid1_3_dmd_source'] = $imageRow->lroot . "/" . $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
             $data['fid1_3_dmd_description'] = "http://acms.sl.nsw.gov.au/" . $imageRow->lroot .'/'. $imageRow->wpath . "/" . $imageRow->itemKey . "r." . $imageRow->ltype;
             $data['fid1_3_dmd_identifier'] = $imageRow->itemID;
-            $data['fid1_3_dmd_date'] = $this->_getDatePart($itemTextRow->ah, null);
-            $data['fid1_3_dmd_isFormatOf'] = !empty($itemTextRow->cl) ? $itemTextRow->cl : $itemTextRow->bk;
+            $data['fid1_3_dmd_date'] = $this->_getDatePart($imageItemTextRow->ah, null);
+            $data['fid1_3_dmd_isFormatOf'] = !empty($imageItemTextRow->cl) ? $imageItemTextRow->cl : $imageItemTextRow->bk;
             $data['fid1_3_dmd_isFormatOf'] = $this->_getUrlPart($data['fid1_3_dmd_isFormatOf']);
             $data['fid1_3_dmd_tableOfContents'] = $collectionRow->itemIndex;
 
@@ -1412,7 +1412,6 @@ class ItemRepository {
                     $data['rep2_amd_rights'] = $data['rep1_amd_rights'] = 'AR_EVERYONE';
                 }
             }
-
         return $data;
     }
 
